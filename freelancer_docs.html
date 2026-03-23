@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FreelanceDocs — Pre-Work Kit</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0d0d;
+    --surface: #161616;
+    --card: #1c1c1c;
+    --border: #2a2a2a;
+    --accent: #e8ff47;
+    --accent2: #ff6b35;
+    --text: #f0f0f0;
+    --muted: #666;
+    --green: #4ade80;
+    --radius: 12px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    min-height: 100vh;
+  }
+
+  header {
+    padding: 32px 40px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    background: var(--bg);
+    z-index: 100;
+  }
+
+  .logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 22px;
+    letter-spacing: -0.5px;
+  }
+
+  .logo span { color: var(--accent); }
+
+  .header-tag {
+    font-size: 11px;
+    color: var(--muted);
+    border: 1px solid var(--border);
+    padding: 4px 10px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .hero {
+    padding: 48px 40px 32px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .hero h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(32px, 5vw, 56px);
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: -1.5px;
+    max-width: 700px;
+  }
+
+  .hero h1 em {
+    font-style: normal;
+    color: var(--accent);
+  }
+
+  .hero p {
+    margin-top: 16px;
+    color: var(--muted);
+    font-size: 13px;
+    max-width: 500px;
+    line-height: 1.7;
+  }
+
+  .client-bar {
+    padding: 24px 40px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .client-bar label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  .client-bar input {
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    flex: 1;
+    min-width: 160px;
+    transition: border-color 0.2s;
+  }
+
+  .client-bar input:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+
+  .client-bar input::placeholder { color: var(--muted); }
+
+  .docs-grid {
+    padding: 32px 40px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 20px;
+  }
+
+  .doc-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+
+  .doc-card:hover { border-color: #3a3a3a; transform: translateY(-2px); }
+
+  .doc-card.complete { border-color: #2a3d2a; }
+  .doc-card.complete .card-header { background: #1a2a1a; }
+
+  .card-header {
+    padding: 18px 20px 14px;
+    background: #1a1a1a;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  .card-num {
+    font-size: 10px;
+    color: var(--muted);
+    font-family: 'Syne', sans-serif;
+    margin-bottom: 4px;
+  }
+
+  .card-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: -0.3px;
+    line-height: 1.2;
+  }
+
+  .card-badge {
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 20px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .badge-pending { background: #2a2000; color: #fbbf24; border: 1px solid #5a4000; }
+  .badge-done { background: #0d2a0d; color: var(--green); border: 1px solid #1a5a1a; }
+  .badge-skip { background: #1a1a2a; color: #818cf8; border: 1px solid #2a2a5a; }
+
+  .card-body {
+    padding: 16px 20px 20px;
+  }
+
+  .card-desc {
+    font-size: 11.5px;
+    color: var(--muted);
+    line-height: 1.65;
+    margin-bottom: 16px;
+  }
+
+  .field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .field-row {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .field-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--muted);
+  }
+
+  .field-row input,
+  .field-row textarea,
+  .field-row select {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    padding: 9px 12px;
+    border-radius: 7px;
+    width: 100%;
+    transition: border-color 0.2s;
+    resize: vertical;
+  }
+
+  .field-row input:focus,
+  .field-row textarea:focus,
+  .field-row select:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+
+  .field-row input::placeholder,
+  .field-row textarea::placeholder { color: #444; }
+
+  .field-row select option { background: var(--card); }
+
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .card-footer {
+    padding: 12px 20px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .btn {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    padding: 7px 14px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: all 0.15s;
+    letter-spacing: 0.3px;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #000;
+    border-color: var(--accent);
+    font-weight: 500;
+  }
+
+  .btn-primary:hover { background: #d4eb30; }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--muted);
+  }
+
+  .btn-ghost:hover { color: var(--text); border-color: #444; }
+
+  .btn-skip {
+    background: transparent;
+    color: #818cf8;
+    border-color: #2a2a5a;
+    font-size: 10px;
+  }
+
+  .btn-skip:hover { background: #1a1a3a; }
+
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--muted);
+    flex-shrink: 0;
+  }
+
+  .status-dot.done { background: var(--green); box-shadow: 0 0 6px var(--green); }
+  .status-dot.skip { background: #818cf8; }
+
+  .progress-bar-wrap {
+    padding: 0 40px 32px;
+  }
+
+  .progress-label {
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .progress-label span { color: var(--accent); }
+
+  .progress-track {
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 2px;
+    transition: width 0.4s ease;
+  }
+
+  .export-bar {
+    padding: 24px 40px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .export-bar .btn-export {
+    background: var(--accent);
+    color: #000;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    padding: 12px 24px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: -0.3px;
+  }
+
+  .export-bar .btn-export:hover { background: #d4eb30; transform: scale(1.02); }
+
+  .export-note {
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  .toast {
+    position: fixed;
+    bottom: 32px;
+    right: 32px;
+    background: var(--accent);
+    color: #000;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    padding: 12px 20px;
+    border-radius: 8px;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.3s;
+    pointer-events: none;
+    z-index: 999;
+  }
+
+  .toast.show { opacity: 1; transform: translateY(0); }
+
+  @media (max-width: 600px) {
+    header, .hero, .client-bar, .docs-grid, .progress-bar-wrap, .export-bar { padding-left: 20px; padding-right: 20px; }
+    .docs-grid { grid-template-columns: 1fr; }
+    .two-col { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Freelance<span>Docs</span></div>
+  <div class="header-tag">Pre-Work Kit v1</div>
+</header>
+
+<div class="hero">
+  <h1>5 Docs.<br>Zero <em>Excuses.</em></h1>
+  <p>Fill in your client details, mark each doc complete. Export a clean summary to send or save. No advance = no start.</p>
+</div>
+
+<div class="client-bar">
+  <label>Client Info →</label>
+  <input type="text" id="clientName" placeholder="Client Name / Business" oninput="syncClient()">
+  <input type="text" id="clientEmail" placeholder="Client Email">
+  <input type="text" id="projectName" placeholder="Project Name">
+  <input type="date" id="projectDate">
+</div>
+
+<div class="progress-bar-wrap">
+  <div class="progress-label">
+    <span id="progressText">0 of 5 docs complete</span>
+    <span id="progressPct">0%</span>
+  </div>
+  <div class="progress-track">
+    <div class="progress-fill" id="progressFill" style="width:0%"></div>
+  </div>
+</div>
+
+<div class="docs-grid" id="docsGrid"></div>
+
+<div class="export-bar">
+  <button class="btn-export" onclick="exportSummary()">⬇ Export Summary</button>
+  <div class="export-note">Downloads a .txt file with all filled details for your records.</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const docs = [
+  {
+    id: 'contract',
+    num: '01',
+    title: 'Contract / Service Agreement',
+    desc: 'Legally binds scope, deliverables, timeline, revision limits, and payment terms. If there\'s no contract, you have no protection.',
+    fields: [
+      { type: 'text', key: 'scope', label: 'Scope of Work', placeholder: 'e.g. Design 5-page website for café' },
+      { type: 'text', key: 'deliverables', label: 'Deliverables', placeholder: 'e.g. Figma file + live website' },
+      { type: 'text', key: 'timeline', label: 'Timeline (days)', placeholder: 'e.g. 14 days from advance receipt' },
+      { type: 'text', key: 'revisions', label: 'Revision Limit', placeholder: 'e.g. 2 rounds of revisions' },
+      { type: 'two', fields: [
+        { type: 'text', key: 'totalAmount', label: 'Total Amount (₹)', placeholder: 'e.g. 15000' },
+        { type: 'text', key: 'advancePct', label: 'Advance %', placeholder: 'e.g. 50%' }
+      ]},
+      { type: 'text', key: 'lateFee', label: 'Late Payment Fee', placeholder: 'e.g. 2% per week after due date' },
+      { type: 'textarea', key: 'contractNotes', label: 'Additional Terms / Notes', placeholder: 'Cancellation policy, kill fee, etc.' },
+    ]
+  },
+  {
+    id: 'nda',
+    num: '02',
+    title: 'NDA — Non-Disclosure Agreement',
+    desc: 'Only needed if client shares sensitive business info (pricing, unreleased products, internal data). Skip if irrelevant.',
+    fields: [
+      { type: 'select', key: 'ndaNeeded', label: 'Is NDA Required?', options: ['— Select —', 'Yes — Client shares sensitive info', 'No — Skip this doc'] },
+      { type: 'text', key: 'confidentialInfo', label: 'What Info Is Confidential?', placeholder: 'e.g. Menu pricing, business strategy, unreleased products' },
+      { type: 'text', key: 'ndaDuration', label: 'NDA Duration', placeholder: 'e.g. 2 years from project completion' },
+      { type: 'textarea', key: 'ndaNotes', label: 'Exclusions / Notes', placeholder: 'Info already public, third-party disclosures, etc.' },
+    ]
+  },
+  {
+    id: 'sow',
+    num: '03',
+    title: 'Proposal / Statement of Work',
+    desc: 'Detailed breakdown of what you\'re delivering. More granular than the contract. Eliminates "I thought you were also doing X" disputes.',
+    fields: [
+      { type: 'textarea', key: 'sowDeliverables', label: 'Detailed Deliverables List', placeholder: 'Line by line — Homepage, About page, Contact form, Mobile responsive, etc.' },
+      { type: 'textarea', key: 'notIncluded', label: 'Explicitly NOT Included', placeholder: 'e.g. SEO optimization, copywriting, photography, logo design' },
+      { type: 'text', key: 'tools', label: 'Tools / Tech Stack', placeholder: 'e.g. Figma + HTML/CSS/JS + GitHub Pages' },
+      { type: 'text', key: 'milestones', label: 'Milestone Checkpoints', placeholder: 'e.g. Day 3: Wireframe. Day 7: Design. Day 14: Final.' },
+      { type: 'textarea', key: 'sowNotes', label: 'Other Specs / Notes', placeholder: 'Brand colors, fonts, reference sites, etc.' },
+    ]
+  },
+  {
+    id: 'invoice',
+    num: '04',
+    title: 'Invoice #1 — Advance Payment Receipt',
+    desc: 'Document the upfront deposit before work starts. 30–50% minimum. No advance = work doesn\'t start. Period.',
+    fields: [
+      { type: 'text', key: 'invoiceNum', label: 'Invoice Number', placeholder: 'e.g. INV-001' },
+      { type: 'two', fields: [
+        { type: 'text', key: 'invoiceTotal', label: 'Total Project Value (₹)', placeholder: '15000' },
+        { type: 'text', key: 'advanceAmount', label: 'Advance Amount (₹)', placeholder: '7500' }
+      ]},
+      { type: 'two', fields: [
+        { type: 'date', key: 'invoiceDate', label: 'Invoice Date' },
+        { type: 'date', key: 'dueDate', label: 'Payment Due Date' }
+      ]},
+      { type: 'text', key: 'paymentMethod', label: 'Payment Method', placeholder: 'e.g. UPI — prathamesh@upi / Bank Transfer' },
+      { type: 'select', key: 'paymentStatus', label: 'Payment Status', options: ['Pending', 'Received — Payment Confirmed', 'Overdue'] },
+      { type: 'text', key: 'upiRef', label: 'UPI Ref / Transaction ID (after payment)', placeholder: 'e.g. 417823944823' },
+    ]
+  },
+  {
+    id: 'ip',
+    num: '05',
+    title: 'IP Assignment Clause',
+    desc: 'You retain all IP rights until final payment is received. Client cannot legally use the work until they\'ve paid in full.',
+    fields: [
+      { type: 'textarea', key: 'ipWork', label: 'Work Covered by IP Clause', placeholder: 'e.g. All design files, source code, graphics created for this project' },
+      { type: 'text', key: 'ipTransferDate', label: 'IP Transfers On', placeholder: 'e.g. Upon receipt of final balance payment' },
+      { type: 'select', key: 'licenseType', label: 'License Type After Full Payment', options: ['Full Ownership Transfer to Client', 'Exclusive License to Client', 'Non-Exclusive License', 'Custom (specify in notes)'] },
+      { type: 'textarea', key: 'ipNotes', label: 'Exceptions / Notes', placeholder: 'e.g. Freelancer retains right to display in portfolio. Third-party assets (stock images) have separate licenses.' },
+    ]
+  }
+];
+
+const state = {};
+docs.forEach(d => {
+  state[d.id] = { status: 'pending', data: {} };
+});
+
+function syncClient() {}
+
+function renderDocs() {
+  const grid = document.getElementById('docsGrid');
+  grid.innerHTML = docs.map(doc => {
+    const s = state[doc.id];
+    const badgeClass = s.status === 'done' ? 'badge-done' : s.status === 'skip' ? 'badge-skip' : 'badge-pending';
+    const badgeText = s.status === 'done' ? '✓ Complete' : s.status === 'skip' ? '— Skipped' : '⏳ Pending';
+    const dotClass = s.status === 'done' ? 'done' : s.status === 'skip' ? 'skip' : '';
+    const cardClass = s.status === 'done' ? 'doc-card complete' : 'doc-card';
+
+    const fieldsHTML = doc.fields.map(f => renderField(doc.id, f)).join('');
+
+    return `
+    <div class="${cardClass}" id="card-${doc.id}">
+      <div class="card-header">
+        <div>
+          <div class="card-num">DOC ${doc.num}</div>
+          <div class="card-title">${doc.title}</div>
+        </div>
+        <span class="card-badge ${badgeClass}">${badgeText}</span>
+      </div>
+      <div class="card-body">
+        <div class="card-desc">${doc.desc}</div>
+        <div class="field-group">${fieldsHTML}</div>
+      </div>
+      <div class="card-footer">
+        <div style="display:flex;gap:8px;align-items:center;">
+          <div class="status-dot ${dotClass}"></div>
+          <span style="font-size:10px;color:var(--muted);">${s.status === 'done' ? 'Saved' : s.status === 'skip' ? 'Skipped' : 'Unsaved'}</span>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-skip" onclick="skipDoc('${doc.id}')">Skip</button>
+          <button class="btn btn-primary" onclick="saveDoc('${doc.id}')">Mark Complete</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderField(docId, f) {
+  if (f.type === 'two') {
+    return `<div class="two-col">${f.fields.map(sf => renderField(docId, sf)).join('')}</div>`;
+  }
+  const val = state[docId].data[f.key] || '';
+  if (f.type === 'textarea') {
+    return `<div class="field-row">
+      <div class="field-label">${f.label}</div>
+      <textarea rows="3" placeholder="${f.placeholder || ''}" onchange="updateField('${docId}','${f.key}',this.value)">${val}</textarea>
+    </div>`;
+  }
+  if (f.type === 'select') {
+    const opts = f.options.map(o => `<option ${val===o?'selected':''}>${o}</option>`).join('');
+    return `<div class="field-row">
+      <div class="field-label">${f.label}</div>
+      <select onchange="updateField('${docId}','${f.key}',this.value)">${opts}</select>
+    </div>`;
+  }
+  return `<div class="field-row">
+    <div class="field-label">${f.label}</div>
+    <input type="${f.type}" placeholder="${f.placeholder||''}" value="${val}" onchange="updateField('${docId}','${f.key}',this.value)">
+  </div>`;
+}
+
+function updateField(docId, key, val) {
+  state[docId].data[key] = val;
+}
+
+function saveDoc(id) {
+  state[id].status = 'done';
+  renderDocs();
+  updateProgress();
+  showToast('Doc marked complete ✓');
+}
+
+function skipDoc(id) {
+  state[id].status = 'skip';
+  renderDocs();
+  updateProgress();
+  showToast('Doc skipped');
+}
+
+function updateProgress() {
+  const done = docs.filter(d => state[d.id].status !== 'pending').length;
+  const pct = Math.round((done / docs.length) * 100);
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressText').textContent = `${done} of ${docs.length} docs complete`;
+  document.getElementById('progressPct').textContent = pct + '%';
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+function exportSummary() {
+  const cn = document.getElementById('clientName').value || 'N/A';
+  const ce = document.getElementById('clientEmail').value || 'N/A';
+  const pn = document.getElementById('projectName').value || 'N/A';
+  const pd = document.getElementById('projectDate').value || 'N/A';
+
+  let txt = `FREELANCE PRE-WORK DOCUMENT SUMMARY\n`;
+  txt += `=====================================\n`;
+  txt += `Generated: ${new Date().toLocaleString()}\n\n`;
+  txt += `CLIENT: ${cn}\nEMAIL: ${ce}\nPROJECT: ${pn}\nDATE: ${pd}\n\n`;
+
+  docs.forEach(doc => {
+    const s = state[doc.id];
+    txt += `--------------------------------------\n`;
+    txt += `[DOC ${doc.num}] ${doc.title}\n`;
+    txt += `STATUS: ${s.status.toUpperCase()}\n`;
+    const d = s.data;
+    Object.entries(d).forEach(([k, v]) => {
+      if (v) txt += `  ${k}: ${v}\n`;
+    });
+    txt += '\n';
+  });
+
+  const blob = new Blob([txt], { type: 'text/plain' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `FreelanceDocs_${cn.replace(/\s/g,'_') || 'Client'}_${Date.now()}.txt`;
+  a.click();
+  showToast('Summary exported ✓');
+}
+
+renderDocs();
+</script>
+</body>
+</html>
