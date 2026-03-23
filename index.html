@@ -1,641 +1,562 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FreelanceDocs — Pre-Work Kit</title>
+<title>FreelanceDocs</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #0d0d0d;
-    --surface: #161616;
-    --card: #1c1c1c;
-    --border: #2a2a2a;
-    --accent: #e8ff47;
-    --accent2: #ff6b35;
-    --text: #f0f0f0;
-    --muted: #666;
-    --green: #4ade80;
-    --radius: 12px;
-  }
+:root {
+  --bg: #0d0d0d; --surface: #141414; --card: #1c1c1c; --border: #252525;
+  --accent: #e8ff47; --text: #f0f0f0; --muted: #555; --muted2: #888;
+  --green: #4ade80; --red: #f87171; --purple: #818cf8; --sidebar-w: 260px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: 'DM Mono', monospace; min-height: 100vh; display: flex; overflow: hidden; }
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+#sidebar { width: var(--sidebar-w); min-width: var(--sidebar-w); background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; height: 100vh; position: sticky; top: 0; }
+.sb-logo { padding: 22px 20px 16px; border-bottom: 1px solid var(--border); font-family: 'Syne', sans-serif; font-weight: 800; font-size: 18px; letter-spacing: -0.5px; flex-shrink: 0; }
+.sb-logo span { color: var(--accent); }
+.sb-logo sub { font-size: 9px; color: var(--muted); font-family: 'DM Mono', monospace; font-weight: 300; display: block; margin-top: 2px; letter-spacing: 1px; text-transform: uppercase; }
+.sb-section-label { padding: 14px 16px 8px; font-size: 9px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+.sb-add-btn { background: var(--accent); color: #000; border: none; cursor: pointer; font-family: 'Syne', sans-serif; font-weight: 800; font-size: 15px; width: 22px; height: 22px; border-radius: 5px; display: flex; align-items: center; justify-content: center; transition: background 0.15s; }
+.sb-add-btn:hover { background: #d4eb30; }
+.clients-list { flex: 1; overflow-y: auto; padding: 4px 10px 16px; }
+.clients-list::-webkit-scrollbar { width: 3px; }
+.clients-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+.client-item { padding: 10px 12px; border-radius: 8px; cursor: pointer; transition: background 0.15s; margin-bottom: 3px; border: 1px solid transparent; position: relative; }
+.client-item:hover { background: #1e1e1e; }
+.client-item.active { background: #1e1e1e; border-color: var(--border); }
+.client-item.active::before { content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 2px; height: 60%; background: var(--accent); border-radius: 0 2px 2px 0; }
+.ci-name { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 3px; }
+.ci-meta { font-size: 10px; color: var(--muted2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ci-progress { margin-top: 6px; height: 2px; background: var(--border); border-radius: 1px; overflow: hidden; }
+.ci-progress-fill { height: 100%; background: var(--accent); border-radius: 1px; transition: width 0.3s; }
+.ci-progress-fill.full { background: var(--green); }
+.sb-delete { position: absolute; right: 8px; top: 8px; background: transparent; border: none; color: var(--muted); cursor: pointer; font-size: 13px; opacity: 0; transition: opacity 0.15s; padding: 2px 4px; }
+.client-item:hover .sb-delete { opacity: 1; }
+.sb-delete:hover { color: var(--red); }
+.sb-empty { padding: 20px 16px; font-size: 11px; color: var(--muted); line-height: 1.7; text-align: center; }
 
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'DM Mono', monospace;
-    min-height: 100vh;
-  }
+#main { flex: 1; overflow-y: auto; height: 100vh; display: flex; flex-direction: column; }
+#main::-webkit-scrollbar { width: 4px; }
+#main::-webkit-scrollbar-thumb { background: var(--border); }
 
-  header {
-    padding: 32px 40px 24px;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    position: sticky;
-    top: 0;
-    background: var(--bg);
-    z-index: 100;
-  }
+.main-header { padding: 20px 32px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; background: var(--bg); z-index: 50; gap: 12px; }
+.mh-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 19px; letter-spacing: -0.5px; }
+.mh-title small { display: block; font-size: 10px; color: var(--muted2); font-family: 'DM Mono', monospace; font-weight: 300; margin-top: 1px; }
+.mh-actions { display: flex; gap: 8px; }
+.btn { font-family: 'DM Mono', monospace; font-size: 11px; padding: 7px 14px; border-radius: 7px; border: 1px solid var(--border); cursor: pointer; transition: all 0.15s; }
+.btn-accent { background: var(--accent); color: #000; border-color: var(--accent); font-weight: 500; }
+.btn-accent:hover { background: #d4eb30; }
+.btn-ghost { background: transparent; color: var(--muted2); }
+.btn-ghost:hover { color: var(--text); border-color: #444; }
 
-  .logo {
-    font-family: 'Syne', sans-serif;
-    font-weight: 800;
-    font-size: 22px;
-    letter-spacing: -0.5px;
-  }
+.client-info-bar { padding: 14px 32px; background: var(--surface); border-bottom: 1px solid var(--border); display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.cib-field { display: flex; flex-direction: column; gap: 4px; }
+.cib-label { font-size: 9px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); }
+.cib-field input { background: var(--card); border: 1px solid var(--border); color: var(--text); font-family: 'DM Mono', monospace; font-size: 12px; padding: 8px 10px; border-radius: 7px; transition: border-color 0.2s; width: 100%; }
+.cib-field input:focus { outline: none; border-color: var(--accent); }
+.cib-field input::placeholder { color: #333; }
 
-  .logo span { color: var(--accent); }
+.progress-wrap { padding: 12px 32px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 14px; }
+.progress-label { font-size: 10px; color: var(--muted2); white-space: nowrap; }
+.progress-label b { color: var(--accent); }
+.progress-track { flex: 1; height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; }
+.progress-fill { height: 100%; background: var(--accent); border-radius: 2px; transition: width 0.4s; }
+.progress-fill.full { background: var(--green); }
+.progress-pct { font-size: 10px; color: var(--muted2); white-space: nowrap; }
 
-  .header-tag {
-    font-size: 11px;
-    color: var(--muted);
-    border: 1px solid var(--border);
-    padding: 4px 10px;
-    border-radius: 20px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-  }
+.docs-grid { padding: 20px 32px 32px; display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 14px; flex: 1; }
+.doc-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; transition: border-color 0.2s, transform 0.15s; }
+.doc-card:hover { border-color: #333; transform: translateY(-1px); }
+.doc-card.complete { border-color: #253525; }
+.doc-card.complete .card-hd { background: #172017; }
+.doc-card.skipped { border-color: #252540; opacity: 0.65; }
 
-  .hero {
-    padding: 48px 40px 32px;
-    border-bottom: 1px solid var(--border);
-  }
+.card-hd { padding: 13px 15px 11px; background: #181818; display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+.card-hd-left { display: flex; flex-direction: column; gap: 3px; flex: 1; min-width: 0; }
+.card-hd-right { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex-shrink: 0; }
+.card-num { font-size: 9px; color: var(--muted); font-family: 'Syne', sans-serif; }
+.card-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 13px; letter-spacing: -0.2px; line-height: 1.25; }
+.card-badge { font-size: 9px; padding: 2px 7px; border-radius: 20px; white-space: nowrap; }
+.bp { background: #2a2000; color: #fbbf24; border: 1px solid #5a4000; }
+.bd { background: #0d2a0d; color: var(--green); border: 1px solid #1a5a1a; }
+.bs { background: #1a1a2a; color: var(--purple); border: 1px solid #2a2a5a; }
 
-  .hero h1 {
-    font-family: 'Syne', sans-serif;
-    font-size: clamp(32px, 5vw, 56px);
-    font-weight: 800;
-    line-height: 1.05;
-    letter-spacing: -1.5px;
-    max-width: 700px;
-  }
+/* prefill tag */
+.prefill-tag { font-size: 8px; padding: 2px 6px; border-radius: 10px; background: #1a1a00; color: #e8ff47aa; border: 1px solid #3a3a00; white-space: nowrap; cursor: pointer; transition: all 0.15s; }
+.prefill-tag:hover { background: #2a2a00; color: var(--accent); }
 
-  .hero h1 em {
-    font-style: normal;
-    color: var(--accent);
-  }
+.card-body { padding: 12px 15px 13px; }
+.card-desc { font-size: 10.5px; color: var(--muted2); line-height: 1.6; margin-bottom: 11px; }
+.field-group { display: flex; flex-direction: column; gap: 8px; }
+.field-row { display: flex; flex-direction: column; gap: 3px; }
+.field-label { font-size: 9px; text-transform: uppercase; letter-spacing: 0.8px; color: var(--muted); }
+.field-row input, .field-row textarea, .field-row select { background: var(--surface); border: 1px solid var(--border); color: var(--text); font-family: 'DM Mono', monospace; font-size: 11px; padding: 7px 10px; border-radius: 6px; width: 100%; transition: border-color 0.2s; resize: vertical; }
+.field-row input:focus, .field-row textarea:focus, .field-row select:focus { outline: none; border-color: var(--accent); }
+.field-row input::placeholder, .field-row textarea::placeholder { color: #333; }
+.field-row select option { background: var(--card); }
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 
-  .hero p {
-    margin-top: 16px;
-    color: var(--muted);
-    font-size: 13px;
-    max-width: 500px;
-    line-height: 1.7;
-  }
+.card-ft { padding: 9px 15px; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 6px; flex-wrap: wrap; }
+.ft-status { display: flex; align-items: center; gap: 6px; }
+.status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--muted); flex-shrink: 0; }
+.status-dot.done { background: var(--green); box-shadow: 0 0 5px var(--green); }
+.status-dot.skip { background: var(--purple); }
+.ft-status span { font-size: 10px; color: var(--muted2); }
+.ft-btns { display: flex; gap: 5px; align-items: center; }
+.btn-skip { background: transparent; color: var(--purple); border: 1px solid #2a2a5a; font-size: 10px; padding: 5px 9px; border-radius: 5px; cursor: pointer; font-family: 'DM Mono',monospace; transition: all 0.15s; }
+.btn-skip:hover { background: #1a1a3a; }
+.btn-save { background: var(--accent); color: #000; border: none; font-size: 10px; padding: 5px 11px; border-radius: 5px; cursor: pointer; font-family: 'DM Mono',monospace; font-weight: 500; transition: all 0.15s; }
+.btn-save:hover { background: #d4eb30; }
+.btn-dl { background: #1a1a1a; color: var(--muted2); border: 1px solid var(--border); font-size: 10px; padding: 5px 9px; border-radius: 5px; cursor: pointer; font-family: 'DM Mono',monospace; transition: all 0.15s; }
+.btn-dl:hover { color: var(--text); border-color: #444; }
+.btn-undo { background: transparent; color: var(--muted2); border: 1px solid var(--border); font-size: 10px; padding: 5px 11px; border-radius: 5px; cursor: pointer; font-family: 'DM Mono',monospace; transition: all 0.15s; }
+.btn-undo:hover { color: var(--red); border-color: var(--red); }
 
-  .client-bar {
-    padding: 24px 40px;
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    gap: 16px;
-    align-items: center;
-    flex-wrap: wrap;
-  }
+.empty-state { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 60px 40px; text-align: center; }
+.empty-state h2 { font-family: 'Syne', sans-serif; font-size: 26px; font-weight: 800; letter-spacing: -1px; }
+.empty-state h2 em { color: var(--accent); font-style: normal; }
+.empty-state p { font-size: 12px; color: var(--muted2); line-height: 1.7; max-width: 280px; }
+.empty-cta { margin-top: 6px; background: var(--accent); color: #000; font-family: 'Syne', sans-serif; font-weight: 800; font-size: 13px; padding: 11px 22px; border-radius: 8px; border: none; cursor: pointer; transition: all 0.2s; }
+.empty-cta:hover { background: #d4eb30; transform: scale(1.03); }
 
-  .client-bar label {
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: var(--muted);
-    white-space: nowrap;
-  }
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 200; display: none; align-items: center; justify-content: center; }
+.modal-overlay.open { display: flex; }
+.modal { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 26px 26px 22px; width: 360px; max-width: 90vw; }
+.modal h3 { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 17px; margin-bottom: 18px; letter-spacing: -0.5px; }
+.modal-fields { display: flex; flex-direction: column; gap: 11px; }
+.modal-field { display: flex; flex-direction: column; gap: 4px; }
+.modal-field label { font-size: 9px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); }
+.modal-field input { background: var(--surface); border: 1px solid var(--border); color: var(--text); font-family: 'DM Mono', monospace; font-size: 13px; padding: 10px 12px; border-radius: 7px; transition: border-color 0.2s; }
+.modal-field input:focus { outline: none; border-color: var(--accent); }
+.modal-field input::placeholder { color: #444; }
+.modal-actions { display: flex; gap: 8px; margin-top: 18px; justify-content: flex-end; }
 
-  .client-bar input {
-    background: var(--card);
-    border: 1px solid var(--border);
-    color: var(--text);
-    font-family: 'DM Mono', monospace;
-    font-size: 13px;
-    padding: 10px 14px;
-    border-radius: 8px;
-    flex: 1;
-    min-width: 160px;
-    transition: border-color 0.2s;
-  }
+.toast { position: fixed; bottom: 22px; right: 22px; background: var(--accent); color: #000; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 12px; padding: 9px 16px; border-radius: 8px; opacity: 0; transform: translateY(8px); transition: all 0.25s; pointer-events: none; z-index: 999; }
+.toast.show { opacity: 1; transform: translateY(0); }
 
-  .client-bar input:focus {
-    outline: none;
-    border-color: var(--accent);
-  }
-
-  .client-bar input::placeholder { color: var(--muted); }
-
-  .docs-grid {
-    padding: 32px 40px;
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-    gap: 20px;
-  }
-
-  .doc-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    overflow: hidden;
-    transition: border-color 0.2s, transform 0.2s;
-  }
-
-  .doc-card:hover { border-color: #3a3a3a; transform: translateY(-2px); }
-
-  .doc-card.complete { border-color: #2a3d2a; }
-  .doc-card.complete .card-header { background: #1a2a1a; }
-
-  .card-header {
-    padding: 18px 20px 14px;
-    background: #1a1a1a;
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 10px;
-  }
-
-  .card-num {
-    font-size: 10px;
-    color: var(--muted);
-    font-family: 'Syne', sans-serif;
-    margin-bottom: 4px;
-  }
-
-  .card-title {
-    font-family: 'Syne', sans-serif;
-    font-weight: 700;
-    font-size: 15px;
-    letter-spacing: -0.3px;
-    line-height: 1.2;
-  }
-
-  .card-badge {
-    font-size: 10px;
-    padding: 3px 8px;
-    border-radius: 20px;
-    white-space: nowrap;
-    flex-shrink: 0;
-  }
-
-  .badge-pending { background: #2a2000; color: #fbbf24; border: 1px solid #5a4000; }
-  .badge-done { background: #0d2a0d; color: var(--green); border: 1px solid #1a5a1a; }
-  .badge-skip { background: #1a1a2a; color: #818cf8; border: 1px solid #2a2a5a; }
-
-  .card-body {
-    padding: 16px 20px 20px;
-  }
-
-  .card-desc {
-    font-size: 11.5px;
-    color: var(--muted);
-    line-height: 1.65;
-    margin-bottom: 16px;
-  }
-
-  .field-group {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-
-  .field-row {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
-
-  .field-label {
-    font-size: 10px;
-    text-transform: uppercase;
-    letter-spacing: 0.8px;
-    color: var(--muted);
-  }
-
-  .field-row input,
-  .field-row textarea,
-  .field-row select {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    color: var(--text);
-    font-family: 'DM Mono', monospace;
-    font-size: 12px;
-    padding: 9px 12px;
-    border-radius: 7px;
-    width: 100%;
-    transition: border-color 0.2s;
-    resize: vertical;
-  }
-
-  .field-row input:focus,
-  .field-row textarea:focus,
-  .field-row select:focus {
-    outline: none;
-    border-color: var(--accent);
-  }
-
-  .field-row input::placeholder,
-  .field-row textarea::placeholder { color: #444; }
-
-  .field-row select option { background: var(--card); }
-
-  .two-col {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-  }
-
-  .card-footer {
-    padding: 12px 20px;
-    border-top: 1px solid var(--border);
-    display: flex;
-    gap: 8px;
-    align-items: center;
-    justify-content: space-between;
-  }
-
-  .btn {
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    padding: 7px 14px;
-    border-radius: 6px;
-    border: 1px solid var(--border);
-    cursor: pointer;
-    transition: all 0.15s;
-    letter-spacing: 0.3px;
-  }
-
-  .btn-primary {
-    background: var(--accent);
-    color: #000;
-    border-color: var(--accent);
-    font-weight: 500;
-  }
-
-  .btn-primary:hover { background: #d4eb30; }
-
-  .btn-ghost {
-    background: transparent;
-    color: var(--muted);
-  }
-
-  .btn-ghost:hover { color: var(--text); border-color: #444; }
-
-  .btn-skip {
-    background: transparent;
-    color: #818cf8;
-    border-color: #2a2a5a;
-    font-size: 10px;
-  }
-
-  .btn-skip:hover { background: #1a1a3a; }
-
-  .status-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--muted);
-    flex-shrink: 0;
-  }
-
-  .status-dot.done { background: var(--green); box-shadow: 0 0 6px var(--green); }
-  .status-dot.skip { background: #818cf8; }
-
-  .progress-bar-wrap {
-    padding: 0 40px 32px;
-  }
-
-  .progress-label {
-    font-size: 11px;
-    color: var(--muted);
-    margin-bottom: 8px;
-    display: flex;
-    justify-content: space-between;
-  }
-
-  .progress-label span { color: var(--accent); }
-
-  .progress-track {
-    height: 4px;
-    background: var(--border);
-    border-radius: 2px;
-    overflow: hidden;
-  }
-
-  .progress-fill {
-    height: 100%;
-    background: var(--accent);
-    border-radius: 2px;
-    transition: width 0.4s ease;
-  }
-
-  .export-bar {
-    padding: 24px 40px;
-    border-top: 1px solid var(--border);
-    display: flex;
-    gap: 12px;
-    align-items: center;
-    flex-wrap: wrap;
-  }
-
-  .export-bar .btn-export {
-    background: var(--accent);
-    color: #000;
-    font-family: 'Syne', sans-serif;
-    font-weight: 700;
-    font-size: 13px;
-    padding: 12px 24px;
-    border-radius: 8px;
-    border: none;
-    cursor: pointer;
-    transition: all 0.2s;
-    letter-spacing: -0.3px;
-  }
-
-  .export-bar .btn-export:hover { background: #d4eb30; transform: scale(1.02); }
-
-  .export-note {
-    font-size: 11px;
-    color: var(--muted);
-  }
-
-  .toast {
-    position: fixed;
-    bottom: 32px;
-    right: 32px;
-    background: var(--accent);
-    color: #000;
-    font-family: 'Syne', sans-serif;
-    font-weight: 700;
-    font-size: 13px;
-    padding: 12px 20px;
-    border-radius: 8px;
-    opacity: 0;
-    transform: translateY(10px);
-    transition: all 0.3s;
-    pointer-events: none;
-    z-index: 999;
-  }
-
-  .toast.show { opacity: 1; transform: translateY(0); }
-
-  @media (max-width: 600px) {
-    header, .hero, .client-bar, .docs-grid, .progress-bar-wrap, .export-bar { padding-left: 20px; padding-right: 20px; }
-    .docs-grid { grid-template-columns: 1fr; }
-    .two-col { grid-template-columns: 1fr; }
-  }
+@media (max-width: 680px) {
+  #sidebar { display: none; }
+  .client-info-bar { grid-template-columns: 1fr 1fr; padding: 12px 16px; }
+  .docs-grid { padding: 16px; grid-template-columns: 1fr; }
+  .main-header, .progress-wrap { padding-left: 16px; padding-right: 16px; }
+}
 </style>
 </head>
 <body>
 
-<header>
-  <div class="logo">Freelance<span>Docs</span></div>
-  <div class="header-tag">Pre-Work Kit v1</div>
-</header>
-
-<div class="hero">
-  <h1>5 Docs.<br>Zero <em>Excuses.</em></h1>
-  <p>Fill in your client details, mark each doc complete. Export a clean summary to send or save. No advance = no start.</p>
+<div id="sidebar">
+  <div class="sb-logo">Freelance<span>Docs</span><sub>Client Manager</sub></div>
+  <div class="sb-section-label">Clients <button class="sb-add-btn" onclick="openModal()">+</button></div>
+  <div class="clients-list" id="clientsList"></div>
 </div>
 
-<div class="client-bar">
-  <label>Client Info →</label>
-  <input type="text" id="clientName" placeholder="Client Name / Business" oninput="syncClient()">
-  <input type="text" id="clientEmail" placeholder="Client Email">
-  <input type="text" id="projectName" placeholder="Project Name">
-  <input type="date" id="projectDate">
-</div>
-
-<div class="progress-bar-wrap">
-  <div class="progress-label">
-    <span id="progressText">0 of 5 docs complete</span>
-    <span id="progressPct">0%</span>
+<div id="main">
+  <div class="empty-state" id="emptyState">
+    <h2>Zero clients,<br><em>zero excuses.</em></h2>
+    <p>Add a client from the sidebar. All data saves automatically — no downloads needed.</p>
+    <button class="empty-cta" onclick="openModal()">+ Add First Client</button>
   </div>
-  <div class="progress-track">
-    <div class="progress-fill" id="progressFill" style="width:0%"></div>
+  <div id="workspace" style="display:none;flex-direction:column;flex:1;">
+    <div class="main-header">
+      <div class="mh-title"><span id="wsName">—</span><small id="wsProj">—</small></div>
+      <div class="mh-actions">
+        <button class="btn btn-ghost" onclick="exportAll()">⬇ Export All</button>
+        <button class="btn btn-accent" onclick="saveInfo()">Save Info</button>
+      </div>
+    </div>
+    <div class="client-info-bar">
+      <div class="cib-field"><span class="cib-label">Client Name</span><input type="text" id="fName" placeholder="Café Celebration" oninput="liveSync()"></div>
+      <div class="cib-field"><span class="cib-label">Email</span><input type="text" id="fEmail" placeholder="owner@email.com" oninput="saveInfo()"></div>
+      <div class="cib-field"><span class="cib-label">Project</span><input type="text" id="fProject" placeholder="Website Redesign" oninput="liveSync()"></div>
+      <div class="cib-field"><span class="cib-label">Date</span><input type="date" id="fDate" onchange="saveInfo()"></div>
+    </div>
+    <div class="progress-wrap">
+      <span class="progress-label"><b id="progDone">0</b>/5 docs done</span>
+      <div class="progress-track"><div class="progress-fill" id="pFill" style="width:0%"></div></div>
+      <span class="progress-pct" id="pPct">0%</span>
+    </div>
+    <div class="docs-grid" id="docsGrid"></div>
   </div>
 </div>
 
-<div class="docs-grid" id="docsGrid"></div>
-
-<div class="export-bar">
-  <button class="btn-export" onclick="exportSummary()">⬇ Export Summary</button>
-  <div class="export-note">Downloads a .txt file with all filled details for your records.</div>
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <h3>New Client</h3>
+    <div class="modal-fields">
+      <div class="modal-field"><label>Client Name *</label><input type="text" id="mcName" placeholder="e.g. Café Celebration, Khandala"></div>
+      <div class="modal-field"><label>Project Name *</label><input type="text" id="mcProject" placeholder="e.g. Website Design"></div>
+      <div class="modal-field"><label>Email (optional)</label><input type="text" id="mcEmail" placeholder="owner@gmail.com"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-accent" onclick="createClient()">Create →</button>
+    </div>
+  </div>
 </div>
 
 <div class="toast" id="toast"></div>
 
 <script>
-const docs = [
+// ─── DOC DEFINITIONS ────────────────────────────────────────────────
+const DOCS = [
   {
-    id: 'contract',
-    num: '01',
-    title: 'Contract / Service Agreement',
-    desc: 'Legally binds scope, deliverables, timeline, revision limits, and payment terms. If there\'s no contract, you have no protection.',
-    fields: [
-      { type: 'text', key: 'scope', label: 'Scope of Work', placeholder: 'e.g. Design 5-page website for café' },
-      { type: 'text', key: 'deliverables', label: 'Deliverables', placeholder: 'e.g. Figma file + live website' },
-      { type: 'text', key: 'timeline', label: 'Timeline (days)', placeholder: 'e.g. 14 days from advance receipt' },
-      { type: 'text', key: 'revisions', label: 'Revision Limit', placeholder: 'e.g. 2 rounds of revisions' },
-      { type: 'two', fields: [
-        { type: 'text', key: 'totalAmount', label: 'Total Amount (₹)', placeholder: 'e.g. 15000' },
-        { type: 'text', key: 'advancePct', label: 'Advance %', placeholder: 'e.g. 50%' }
-      ]},
-      { type: 'text', key: 'lateFee', label: 'Late Payment Fee', placeholder: 'e.g. 2% per week after due date' },
-      { type: 'textarea', key: 'contractNotes', label: 'Additional Terms / Notes', placeholder: 'Cancellation policy, kill fee, etc.' },
-    ]
+    id:'contract', num:'01', title:'Contract / Service Agreement',
+    desc:'Legally binds scope, deliverables, timeline, revision limits, and payment terms. No contract = no protection.',
+    fields:[
+      {t:'text',k:'scope',l:'Scope of Work',p:'e.g. Design 5-page website for café'},
+      {t:'text',k:'deliverables',l:'Deliverables',p:'e.g. Figma file + live website'},
+      {t:'text',k:'timeline',l:'Timeline',p:'e.g. 14 days from advance receipt'},
+      {t:'text',k:'revisions',l:'Revision Limit',p:'e.g. 2 rounds'},
+      {t:'two',fields:[{t:'text',k:'total',l:'Total (₹)',p:'15000'},{t:'text',k:'advpct',l:'Advance %',p:'50%'}]},
+      {t:'text',k:'latefee',l:'Late Payment Fee',p:'e.g. 2% per week after due date'},
+      {t:'ta',k:'cnotes',l:'Additional Terms',p:'Kill fee, cancellation policy…'},
+    ],
+    prefill: {
+      scope: 'Design and develop a complete website as per agreed scope of work.',
+      deliverables: 'Final design files (Figma/PSD) + live deployed website + source code handover.',
+      timeline: '14 days from the date advance payment is received.',
+      revisions: '2 rounds of revisions included. Additional revisions billed at ₹500/round.',
+      total: '',
+      advpct: '50%',
+      latefee: '2% per week on outstanding balance after due date.',
+      cnotes: 'Kill Fee: If client cancels after work has begun, 50% of total project value is non-refundable.\nWork starts only after advance payment is confirmed.\nFreelancer retains right to display work in portfolio unless client requests otherwise in writing.'
+    }
   },
   {
-    id: 'nda',
-    num: '02',
-    title: 'NDA — Non-Disclosure Agreement',
-    desc: 'Only needed if client shares sensitive business info (pricing, unreleased products, internal data). Skip if irrelevant.',
-    fields: [
-      { type: 'select', key: 'ndaNeeded', label: 'Is NDA Required?', options: ['— Select —', 'Yes — Client shares sensitive info', 'No — Skip this doc'] },
-      { type: 'text', key: 'confidentialInfo', label: 'What Info Is Confidential?', placeholder: 'e.g. Menu pricing, business strategy, unreleased products' },
-      { type: 'text', key: 'ndaDuration', label: 'NDA Duration', placeholder: 'e.g. 2 years from project completion' },
-      { type: 'textarea', key: 'ndaNotes', label: 'Exclusions / Notes', placeholder: 'Info already public, third-party disclosures, etc.' },
-    ]
+    id:'nda', num:'02', title:'NDA — Non-Disclosure Agreement',
+    desc:'Protects sensitive business info shared during the project. Both parties are bound.',
+    fields:[
+      {t:'sel',k:'ndaNeeded',l:'Is NDA Required?',opts:['Yes — Client shares sensitive info','No — Skip this doc']},
+      {t:'text',k:'confInfo',l:'What Is Confidential?',p:'Menu pricing, unreleased products, business strategy…'},
+      {t:'text',k:'ndaDur',l:'NDA Duration',p:'2 years from project completion'},
+      {t:'ta',k:'ndaClause',l:'Standard NDA Clause',p:''},
+      {t:'ta',k:'ndaNotes',l:'Exclusions / Notes',p:'Info already public, third-party disclosures…'},
+    ],
+    prefill: {
+      ndaNeeded: 'Yes — Client shares sensitive info',
+      confInfo: 'All business information, pricing, strategies, designs, content, and data shared by the client during the project.',
+      ndaDur: '2 years from the date of project completion.',
+      ndaClause: 'Both parties agree to keep all shared information strictly confidential.\nThe freelancer shall not disclose, share, or use any client information for purposes other than completing the agreed project.\nThis agreement does not apply to information that is already publicly available, independently developed, or legally required to be disclosed.\nBreach of this agreement entitles the affected party to seek legal remedies.',
+      ndaNotes: 'Freelancer retains the right to display non-confidential visual deliverables (e.g. website screenshots) in their portfolio unless the client explicitly requests otherwise in writing.'
+    }
   },
   {
-    id: 'sow',
-    num: '03',
-    title: 'Proposal / Statement of Work',
-    desc: 'Detailed breakdown of what you\'re delivering. More granular than the contract. Eliminates "I thought you were also doing X" disputes.',
-    fields: [
-      { type: 'textarea', key: 'sowDeliverables', label: 'Detailed Deliverables List', placeholder: 'Line by line — Homepage, About page, Contact form, Mobile responsive, etc.' },
-      { type: 'textarea', key: 'notIncluded', label: 'Explicitly NOT Included', placeholder: 'e.g. SEO optimization, copywriting, photography, logo design' },
-      { type: 'text', key: 'tools', label: 'Tools / Tech Stack', placeholder: 'e.g. Figma + HTML/CSS/JS + GitHub Pages' },
-      { type: 'text', key: 'milestones', label: 'Milestone Checkpoints', placeholder: 'e.g. Day 3: Wireframe. Day 7: Design. Day 14: Final.' },
-      { type: 'textarea', key: 'sowNotes', label: 'Other Specs / Notes', placeholder: 'Brand colors, fonts, reference sites, etc.' },
-    ]
+    id:'sow', num:'03', title:'Proposal / Statement of Work',
+    desc:'Detailed breakdown of exactly what you are delivering. Eliminates scope creep disputes.',
+    fields:[
+      {t:'ta',k:'sowDel',l:'Detailed Deliverables',p:'List every single thing you are delivering…'},
+      {t:'ta',k:'notIncl',l:'Explicitly NOT Included',p:'SEO, copywriting, photography, logo design…'},
+      {t:'text',k:'tools',l:'Tools / Stack',p:'Figma + HTML/CSS/JS + GitHub Pages'},
+      {t:'text',k:'miles',l:'Milestones',p:'Day 3: Wireframe. Day 7: Design. Day 14: Final.'},
+      {t:'ta',k:'sowNotes',l:'Other Specs / Notes',p:'Brand colors, fonts, reference sites…'},
+    ],
+    prefill: {
+      sowDel: '1. Discovery call + requirement gathering\n2. Wireframe / layout concept (1 round for approval)\n3. Full visual design in Figma\n4. Responsive website development (mobile + desktop)\n5. Basic on-page SEO tags (title, meta description)\n6. Contact form / WhatsApp chat integration\n7. Deployment on agreed hosting / GitHub Pages\n8. 7-day post-launch bug fix support',
+      notIncl: '- Logo design or brand identity work\n- Content writing / copywriting\n- Professional photography or video\n- Advanced SEO or Google Ads setup\n- Third-party integrations beyond what is agreed\n- Ongoing website maintenance after handover\n- Domain name or hosting purchase (client\'s responsibility)',
+      tools: 'Figma (design) + HTML / CSS / JavaScript + GitHub Pages / Netlify (deployment)',
+      miles: 'Day 1–2: Requirement sign-off + advance payment\nDay 3–4: Wireframe approval\nDay 5–10: Design + development\nDay 11–13: Client review + revisions\nDay 14: Final delivery + deployment',
+      sowNotes: 'Client must provide: logo files, brand colors, reference websites, all text content, and images before work begins.\nDelays in providing content will extend the timeline accordingly.\nAll approvals must be provided in writing (WhatsApp / email).'
+    }
   },
   {
-    id: 'invoice',
-    num: '04',
-    title: 'Invoice #1 — Advance Payment Receipt',
-    desc: 'Document the upfront deposit before work starts. 30–50% minimum. No advance = work doesn\'t start. Period.',
-    fields: [
-      { type: 'text', key: 'invoiceNum', label: 'Invoice Number', placeholder: 'e.g. INV-001' },
-      { type: 'two', fields: [
-        { type: 'text', key: 'invoiceTotal', label: 'Total Project Value (₹)', placeholder: '15000' },
-        { type: 'text', key: 'advanceAmount', label: 'Advance Amount (₹)', placeholder: '7500' }
-      ]},
-      { type: 'two', fields: [
-        { type: 'date', key: 'invoiceDate', label: 'Invoice Date' },
-        { type: 'date', key: 'dueDate', label: 'Payment Due Date' }
-      ]},
-      { type: 'text', key: 'paymentMethod', label: 'Payment Method', placeholder: 'e.g. UPI — prathamesh@upi / Bank Transfer' },
-      { type: 'select', key: 'paymentStatus', label: 'Payment Status', options: ['Pending', 'Received — Payment Confirmed', 'Overdue'] },
-      { type: 'text', key: 'upiRef', label: 'UPI Ref / Transaction ID (after payment)', placeholder: 'e.g. 417823944823' },
-    ]
+    id:'invoice', num:'04', title:'Invoice #1 — Advance Payment',
+    desc:'Document the deposit before work starts. 30–50% minimum. No advance = work does not start.',
+    fields:[
+      {t:'text',k:'invNum',l:'Invoice Number',p:'INV-001'},
+      {t:'two',fields:[{t:'text',k:'invTotal',l:'Total Value (₹)',p:'15000'},{t:'text',k:'advAmt',l:'Advance Amount (₹)',p:'7500'}]},
+      {t:'two',fields:[{t:'date',k:'invDate',l:'Invoice Date'},{t:'date',k:'dueDate',l:'Payment Due Date'}]},
+      {t:'text',k:'payMethod',l:'Payment Method',p:'UPI / Bank Transfer'},
+      {t:'sel',k:'payStatus',l:'Payment Status',opts:['Pending','Received — Confirmed','Overdue']},
+      {t:'text',k:'txnId',l:'UPI Ref / TXN ID',p:'e.g. 417823944823'},
+      {t:'ta',k:'invNotes',l:'Invoice Terms',p:''},
+    ],
+    prefill: {
+      invNum: 'INV-001',
+      invTotal: '',
+      advAmt: '',
+      invDate: new Date().toISOString().split('T')[0],
+      dueDate: new Date(Date.now()+3*86400000).toISOString().split('T')[0],
+      payMethod: 'UPI (preferred) / Bank Transfer',
+      payStatus: 'Pending',
+      txnId: '',
+      invNotes: 'Work will commence only after advance payment is received and confirmed.\nRemaining balance is due on final delivery before files/access are handed over.\nLate payments attract 2% per week on the outstanding amount.\nThis invoice is valid for 7 days from the date of issue.'
+    }
   },
   {
-    id: 'ip',
-    num: '05',
-    title: 'IP Assignment Clause',
-    desc: 'You retain all IP rights until final payment is received. Client cannot legally use the work until they\'ve paid in full.',
-    fields: [
-      { type: 'textarea', key: 'ipWork', label: 'Work Covered by IP Clause', placeholder: 'e.g. All design files, source code, graphics created for this project' },
-      { type: 'text', key: 'ipTransferDate', label: 'IP Transfers On', placeholder: 'e.g. Upon receipt of final balance payment' },
-      { type: 'select', key: 'licenseType', label: 'License Type After Full Payment', options: ['Full Ownership Transfer to Client', 'Exclusive License to Client', 'Non-Exclusive License', 'Custom (specify in notes)'] },
-      { type: 'textarea', key: 'ipNotes', label: 'Exceptions / Notes', placeholder: 'e.g. Freelancer retains right to display in portfolio. Third-party assets (stock images) have separate licenses.' },
-    ]
+    id:'ip', num:'05', title:'IP Assignment Clause',
+    desc:'You retain all IP rights until final payment is received. Client cannot legally use the work before paying.',
+    fields:[
+      {t:'ta',k:'ipWork',l:'Work Covered',p:'All design files, source code, graphics…'},
+      {t:'text',k:'ipDate',l:'IP Transfers On',p:'Upon receipt of final balance payment'},
+      {t:'sel',k:'licType',l:'License Type',opts:['Full Ownership Transfer to Client','Exclusive License to Client','Non-Exclusive License','Custom (see notes)']},
+      {t:'ta',k:'ipClause',l:'Standard IP Clause',p:''},
+      {t:'ta',k:'ipNotes',l:'Exceptions / Notes',p:'Portfolio rights, stock image licenses…'},
+    ],
+    prefill: {
+      ipWork: 'All original design files, source code, graphics, written content, and deliverables created specifically for this project.',
+      ipDate: 'Upon receipt of full and final payment as per the agreed invoice amount.',
+      licType: 'Full Ownership Transfer to Client',
+      ipClause: 'Until full payment is received, all intellectual property created under this agreement remains exclusively owned by the freelancer.\nThe client may not use, publish, distribute, or reproduce any deliverables until complete payment is confirmed.\nUpon receipt of final payment, all IP rights for original work created under this project transfer to the client.\nThe freelancer retains the right to display the completed work in their portfolio and case studies unless explicitly agreed otherwise in writing.\nThird-party assets (stock images, fonts, icons) are subject to their own respective licenses — the client is responsible for obtaining appropriate licenses for such assets.',
+      ipNotes: 'Freelancer retains portfolio and case study rights.\nAny stock assets used are under their respective third-party licenses.\nSource code is handed over only after full payment is cleared.'
+    }
   }
 ];
 
-const state = {};
-docs.forEach(d => {
-  state[d.id] = { status: 'pending', data: {} };
-});
+// ─── STATE ──────────────────────────────────────────────────────────
+let DB = {};
+let active = null;
 
-function syncClient() {}
+function freshDocs() {
+  const d = {};
+  DOCS.forEach(doc => { d[doc.id] = { status:'pending', data:{} }; });
+  return d;
+}
+function load() { try { const r=localStorage.getItem('fldocs4'); if(r) DB=JSON.parse(r); } catch(e){DB={};} }
+function save() { try { localStorage.setItem('fldocs4', JSON.stringify(DB)); } catch(e){} }
 
+// ─── SIDEBAR ─────────────────────────────────────────────────────────
+function renderSidebar() {
+  const el = document.getElementById('clientsList');
+  const ids = Object.keys(DB);
+  if (!ids.length) { el.innerHTML='<div class="sb-empty">No clients yet.<br>Hit + to add your first one.</div>'; return; }
+  el.innerHTML = ids.map(id => {
+    const c = DB[id];
+    const done = DOCS.filter(d => c.docs[d.id]?.status !== 'pending').length;
+    const pct = Math.round(done/DOCS.length*100);
+    return `<div class="client-item ${id===active?'active':''}" onclick="selectClient('${id}')">
+      <button class="sb-delete" onclick="event.stopPropagation();del('${id}')">✕</button>
+      <div class="ci-name">${esc(c.info.name||'Unnamed')}</div>
+      <div class="ci-meta">${esc(c.info.project||'No project')} · ${done}/5</div>
+      <div class="ci-progress"><div class="ci-progress-fill ${pct===100?'full':''}" style="width:${pct}%"></div></div>
+    </div>`;
+  }).join('');
+}
+
+// ─── SELECT CLIENT ───────────────────────────────────────────────────
+function selectClient(id) {
+  active = id;
+  renderSidebar();
+  const c = DB[id];
+  document.getElementById('emptyState').style.display = 'none';
+  const ws = document.getElementById('workspace');
+  ws.style.display = 'flex';
+  document.getElementById('fName').value = c.info.name||'';
+  document.getElementById('fEmail').value = c.info.email||'';
+  document.getElementById('fProject').value = c.info.project||'';
+  document.getElementById('fDate').value = c.info.date||'';
+  document.getElementById('wsName').textContent = c.info.name||'Unnamed Client';
+  document.getElementById('wsProj').textContent = c.info.project||'No project set';
+  renderDocs();
+  updateProg();
+}
+
+function liveSync() {
+  if (!active) return;
+  DB[active].info.name = document.getElementById('fName').value;
+  DB[active].info.project = document.getElementById('fProject').value;
+  document.getElementById('wsName').textContent = DB[active].info.name||'Unnamed Client';
+  document.getElementById('wsProj').textContent = DB[active].info.project||'No project set';
+  save(); renderSidebar();
+}
+
+function saveInfo() {
+  if (!active) return;
+  DB[active].info.name    = document.getElementById('fName').value;
+  DB[active].info.email   = document.getElementById('fEmail').value;
+  DB[active].info.project = document.getElementById('fProject').value;
+  DB[active].info.date    = document.getElementById('fDate').value;
+  save(); renderSidebar();
+}
+
+// ─── DOCS ────────────────────────────────────────────────────────────
 function renderDocs() {
-  const grid = document.getElementById('docsGrid');
-  grid.innerHTML = docs.map(doc => {
-    const s = state[doc.id];
-    const badgeClass = s.status === 'done' ? 'badge-done' : s.status === 'skip' ? 'badge-skip' : 'badge-pending';
-    const badgeText = s.status === 'done' ? '✓ Complete' : s.status === 'skip' ? '— Skipped' : '⏳ Pending';
-    const dotClass = s.status === 'done' ? 'done' : s.status === 'skip' ? 'skip' : '';
-    const cardClass = s.status === 'done' ? 'doc-card complete' : 'doc-card';
-
-    const fieldsHTML = doc.fields.map(f => renderField(doc.id, f)).join('');
-
-    return `
-    <div class="${cardClass}" id="card-${doc.id}">
-      <div class="card-header">
-        <div>
+  const c = DB[active];
+  document.getElementById('docsGrid').innerHTML = DOCS.map(doc => {
+    const s = c.docs[doc.id];
+    const bcls = s.status==='done'?'bd':s.status==='skip'?'bs':'bp';
+    const btxt = s.status==='done'?'✓ Complete':s.status==='skip'?'— Skipped':'⏳ Pending';
+    const dcls = s.status==='done'?'complete':s.status==='skip'?'skipped':'';
+    const dotcls = s.status==='done'?'done':s.status==='skip'?'skip':'';
+    const stxt = s.status==='done'?'Saved':s.status==='skip'?'Skipped':'Unsaved';
+    return `<div class="doc-card ${dcls}">
+      <div class="card-hd">
+        <div class="card-hd-left">
           <div class="card-num">DOC ${doc.num}</div>
           <div class="card-title">${doc.title}</div>
         </div>
-        <span class="card-badge ${badgeClass}">${badgeText}</span>
+        <div class="card-hd-right">
+          <span class="card-badge ${bcls}">${btxt}</span>
+          <span class="prefill-tag" onclick="applyPrefill('${doc.id}')">⚡ Auto-fill</span>
+        </div>
       </div>
       <div class="card-body">
         <div class="card-desc">${doc.desc}</div>
-        <div class="field-group">${fieldsHTML}</div>
+        <div class="field-group">${doc.fields.map(f=>rf(doc.id,f,s.data)).join('')}</div>
       </div>
-      <div class="card-footer">
-        <div style="display:flex;gap:8px;align-items:center;">
-          <div class="status-dot ${dotClass}"></div>
-          <span style="font-size:10px;color:var(--muted);">${s.status === 'done' ? 'Saved' : s.status === 'skip' ? 'Skipped' : 'Unsaved'}</span>
-        </div>
-        <div style="display:flex;gap:8px;">
-          <button class="btn btn-skip" onclick="skipDoc('${doc.id}')">Skip</button>
-          <button class="btn btn-primary" onclick="saveDoc('${doc.id}')">Mark Complete</button>
+      <div class="card-ft">
+        <div class="ft-status"><div class="status-dot ${dotcls}"></div><span>${stxt}</span></div>
+        <div class="ft-btns">
+          <button class="btn-dl" onclick="downloadDoc('${doc.id}')" title="Download this doc">⬇</button>
+          ${s.status !== 'pending'
+            ? `<button class="btn-undo" onclick="undoDoc('${doc.id}')">↩ Undo</button>`
+            : `<button class="btn-skip" onclick="skipDoc('${doc.id}')">Skip</button>
+               <button class="btn-save" onclick="doneDoc('${doc.id}')">Mark Complete</button>`
+          }
         </div>
       </div>
     </div>`;
   }).join('');
 }
 
-function renderField(docId, f) {
-  if (f.type === 'two') {
-    return `<div class="two-col">${f.fields.map(sf => renderField(docId, sf)).join('')}</div>`;
+function rf(docId, f, data) {
+  if (f.t==='two') return `<div class="two-col">${f.fields.map(sf=>rf(docId,sf,data)).join('')}</div>`;
+  const v = esc(data[f.k]||'');
+  const oc = `onchange="uf('${docId}','${f.k}',this.value)"`;
+  if (f.t==='ta') return `<div class="field-row"><div class="field-label">${f.l}</div><textarea rows="3" placeholder="${f.p||''}" ${oc}>${v}</textarea></div>`;
+  if (f.t==='sel') {
+    const opts = f.opts.map(o=>`<option ${(data[f.k]||f.opts[0])===o?'selected':''}>${esc(o)}</option>`).join('');
+    return `<div class="field-row"><div class="field-label">${f.l}</div><select ${oc}>${opts}</select></div>`;
   }
-  const val = state[docId].data[f.key] || '';
-  if (f.type === 'textarea') {
-    return `<div class="field-row">
-      <div class="field-label">${f.label}</div>
-      <textarea rows="3" placeholder="${f.placeholder || ''}" onchange="updateField('${docId}','${f.key}',this.value)">${val}</textarea>
-    </div>`;
-  }
-  if (f.type === 'select') {
-    const opts = f.options.map(o => `<option ${val===o?'selected':''}>${o}</option>`).join('');
-    return `<div class="field-row">
-      <div class="field-label">${f.label}</div>
-      <select onchange="updateField('${docId}','${f.key}',this.value)">${opts}</select>
-    </div>`;
-  }
-  return `<div class="field-row">
-    <div class="field-label">${f.label}</div>
-    <input type="${f.type}" placeholder="${f.placeholder||''}" value="${val}" onchange="updateField('${docId}','${f.key}',this.value)">
-  </div>`;
+  return `<div class="field-row"><div class="field-label">${f.l}</div><input type="${f.t}" placeholder="${f.p||''}" value="${v}" ${oc}></div>`;
 }
 
-function updateField(docId, key, val) {
-  state[docId].data[key] = val;
+function uf(docId, key, val) {
+  if (!active) return;
+  DB[active].docs[docId].data[key] = val;
+  save();
 }
 
-function saveDoc(id) {
-  state[id].status = 'done';
-  renderDocs();
-  updateProgress();
-  showToast('Doc marked complete ✓');
-}
-
-function skipDoc(id) {
-  state[id].status = 'skip';
-  renderDocs();
-  updateProgress();
-  showToast('Doc skipped');
-}
-
-function updateProgress() {
-  const done = docs.filter(d => state[d.id].status !== 'pending').length;
-  const pct = Math.round((done / docs.length) * 100);
-  document.getElementById('progressFill').style.width = pct + '%';
-  document.getElementById('progressText').textContent = `${done} of ${docs.length} docs complete`;
-  document.getElementById('progressPct').textContent = pct + '%';
-}
-
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2200);
-}
-
-function exportSummary() {
-  const cn = document.getElementById('clientName').value || 'N/A';
-  const ce = document.getElementById('clientEmail').value || 'N/A';
-  const pn = document.getElementById('projectName').value || 'N/A';
-  const pd = document.getElementById('projectDate').value || 'N/A';
-
-  let txt = `FREELANCE PRE-WORK DOCUMENT SUMMARY\n`;
-  txt += `=====================================\n`;
-  txt += `Generated: ${new Date().toLocaleString()}\n\n`;
-  txt += `CLIENT: ${cn}\nEMAIL: ${ce}\nPROJECT: ${pn}\nDATE: ${pd}\n\n`;
-
-  docs.forEach(doc => {
-    const s = state[doc.id];
-    txt += `--------------------------------------\n`;
-    txt += `[DOC ${doc.num}] ${doc.title}\n`;
-    txt += `STATUS: ${s.status.toUpperCase()}\n`;
-    const d = s.data;
-    Object.entries(d).forEach(([k, v]) => {
-      if (v) txt += `  ${k}: ${v}\n`;
-    });
-    txt += '\n';
+// ─── AUTO-FILL ───────────────────────────────────────────────────────
+function applyPrefill(docId) {
+  if (!active) return;
+  const doc = DOCS.find(d=>d.id===docId);
+  if (!doc || !doc.prefill) return;
+  const existing = DB[active].docs[docId].data;
+  // Merge: only fill empty fields, don't overwrite what user already typed
+  Object.entries(doc.prefill).forEach(([k,v]) => {
+    if (!existing[k] || existing[k].trim()==='') {
+      existing[k] = v;
+    }
   });
-
-  const blob = new Blob([txt], { type: 'text/plain' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = `FreelanceDocs_${cn.replace(/\s/g,'_') || 'Client'}_${Date.now()}.txt`;
-  a.click();
-  showToast('Summary exported ✓');
+  save();
+  renderDocs();
+  toast('⚡ Auto-filled with standard clauses');
 }
 
-renderDocs();
+function doneDoc(id) { DB[active].docs[id].status='done'; save(); renderDocs(); updateProg(); renderSidebar(); toast('Doc complete ✓'); }
+function skipDoc(id) { DB[active].docs[id].status='skip'; save(); renderDocs(); updateProg(); renderSidebar(); toast('Doc skipped'); }
+function undoDoc(id) { DB[active].docs[id].status='pending'; save(); renderDocs(); updateProg(); renderSidebar(); toast('↩ Reverted to pending'); }
+
+function updateProg() {
+  const c = DB[active];
+  const done = DOCS.filter(d=>c.docs[d.id]?.status!=='pending').length;
+  const pct = Math.round(done/DOCS.length*100);
+  document.getElementById('progDone').textContent=done;
+  const f=document.getElementById('pFill');
+  f.style.width=pct+'%'; f.className='progress-fill'+(pct===100?' full':'');
+  document.getElementById('pPct').textContent=pct+'%';
+}
+
+// ─── DOWNLOAD SINGLE DOC ─────────────────────────────────────────────
+function downloadDoc(docId) {
+  if (!active) return;
+  const c = DB[active];
+  const doc = DOCS.find(d=>d.id===docId);
+  const s = c.docs[docId];
+  const clientName = c.info.name||'Client';
+  const today = new Date().toLocaleDateString('en-IN');
+
+  let txt = `=====================================\n`;
+  txt += `FREELANCE DOCUMENT: ${doc.title.toUpperCase()}\n`;
+  txt += `=====================================\n\n`;
+  txt += `Date:          ${today}\n`;
+  txt += `Freelancer:    Prathamesh Thakur\n`;
+  txt += `Client:        ${c.info.name||'N/A'}\n`;
+  txt += `Client Email:  ${c.info.email||'N/A'}\n`;
+  txt += `Project:       ${c.info.project||'N/A'}\n`;
+  txt += `Status:        ${s.status.toUpperCase()}\n\n`;
+  txt += `-------------------------------------\n\n`;
+
+  // Flatten all field keys and labels for this doc
+  function flatFields(fields) {
+    fields.forEach(f => {
+      if (f.t==='two') { flatFields(f.fields); return; }
+      const val = s.data[f.k]||'';
+      if (val) txt += `${f.l.toUpperCase()}\n${val}\n\n`;
+    });
+  }
+  flatFields(doc.fields);
+
+  txt += `-------------------------------------\n`;
+  txt += `This document was generated by FreelanceDocs.\n`;
+  txt += `Both parties should sign/acknowledge this document before work begins.\n`;
+
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([txt],{type:'text/plain'}));
+  a.download=`${doc.id}_${clientName.replace(/\s/g,'_')}_${Date.now()}.txt`;
+  a.click();
+  toast('⬇ Doc downloaded');
+}
+
+// ─── EXPORT ALL ───────────────────────────────────────────────────────
+function exportAll() {
+  if (!active) return;
+  const c=DB[active];
+  let t=`FREELANCE COMPLETE PROJECT DOSSIER\n=====================================\nGenerated: ${new Date().toLocaleString()}\n\nCLIENT:  ${c.info.name||'N/A'}\nEMAIL:   ${c.info.email||'N/A'}\nPROJECT: ${c.info.project||'N/A'}\nDATE:    ${c.info.date||'N/A'}\n\n`;
+  DOCS.forEach(doc=>{
+    const s=c.docs[doc.id];
+    t+=`=====================================\n[DOC ${doc.num}] ${doc.title.toUpperCase()}\nSTATUS: ${s.status.toUpperCase()}\n\n`;
+    function flatFields(fields) {
+      fields.forEach(f=>{
+        if(f.t==='two'){flatFields(f.fields);return;}
+        const val=s.data[f.k]||'';
+        if(val) t+=`${f.l.toUpperCase()}\n${val}\n\n`;
+      });
+    }
+    flatFields(doc.fields);
+  });
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([t],{type:'text/plain'}));
+  a.download=`FreelanceDocs_FULL_${(c.info.name||'Client').replace(/\s/g,'_')}_${Date.now()}.txt`;
+  a.click(); toast('⬇ All docs exported');
+}
+
+// ─── MODAL ───────────────────────────────────────────────────────────
+function openModal() { document.getElementById('modal').classList.add('open'); setTimeout(()=>document.getElementById('mcName').focus(),80); }
+function closeModal() { document.getElementById('modal').classList.remove('open'); ['mcName','mcProject','mcEmail'].forEach(id=>document.getElementById(id).value=''); }
+function createClient() {
+  const name=document.getElementById('mcName').value.trim();
+  const proj=document.getElementById('mcProject').value.trim();
+  const email=document.getElementById('mcEmail').value.trim();
+  if (!name) { document.getElementById('mcName').focus(); return; }
+  const id='c_'+Date.now();
+  DB[id]={info:{name,project:proj,email,date:''},docs:freshDocs()};
+  save(); closeModal(); renderSidebar(); selectClient(id); toast('Client added ✓');
+}
+
+function del(id) {
+  if (!confirm(`Delete "${DB[id]?.info?.name||'this client'}"?`)) return;
+  delete DB[id]; save();
+  if (active===id) { active=null; document.getElementById('workspace').style.display='none'; document.getElementById('emptyState').style.display=''; }
+  renderSidebar(); toast('Client deleted');
+}
+
+function toast(msg) { const el=document.getElementById('toast'); el.textContent=msg; el.classList.add('show'); setTimeout(()=>el.classList.remove('show'),2200); }
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&document.getElementById('modal').classList.contains('open')) createClient();
+  if(e.key==='Escape') closeModal();
+});
+
+load();
+renderSidebar();
+const ids=Object.keys(DB);
+if(ids.length) selectClient(ids[ids.length-1]);
 </script>
 </body>
 </html>
