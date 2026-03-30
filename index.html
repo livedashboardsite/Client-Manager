@@ -2,561 +2,675 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FreelanceDocs</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
-<style>
-:root {
-  --bg: #0d0d0d; --surface: #141414; --card: #1c1c1c; --border: #252525;
-  --accent: #e8ff47; --text: #f0f0f0; --muted: #555; --muted2: #888;
-  --green: #4ade80; --red: #f87171; --purple: #818cf8; --sidebar-w: 260px;
-}
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body { background: var(--bg); color: var(--text); font-family: 'DM Mono', monospace; min-height: 100vh; display: flex; overflow: hidden; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Freelancer Invoice Generator | Days & Rate to PDF</title>
+    <!-- html2canvas + jsPDF CDN for clean PDF generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-#sidebar { width: var(--sidebar-w); min-width: var(--sidebar-w); background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; height: 100vh; position: sticky; top: 0; }
-.sb-logo { padding: 22px 20px 16px; border-bottom: 1px solid var(--border); font-family: 'Syne', sans-serif; font-weight: 800; font-size: 18px; letter-spacing: -0.5px; flex-shrink: 0; }
-.sb-logo span { color: var(--accent); }
-.sb-logo sub { font-size: 9px; color: var(--muted); font-family: 'DM Mono', monospace; font-weight: 300; display: block; margin-top: 2px; letter-spacing: 1px; text-transform: uppercase; }
-.sb-section-label { padding: 14px 16px 8px; font-size: 9px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
-.sb-add-btn { background: var(--accent); color: #000; border: none; cursor: pointer; font-family: 'Syne', sans-serif; font-weight: 800; font-size: 15px; width: 22px; height: 22px; border-radius: 5px; display: flex; align-items: center; justify-content: center; transition: background 0.15s; }
-.sb-add-btn:hover { background: #d4eb30; }
-.clients-list { flex: 1; overflow-y: auto; padding: 4px 10px 16px; }
-.clients-list::-webkit-scrollbar { width: 3px; }
-.clients-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-.client-item { padding: 10px 12px; border-radius: 8px; cursor: pointer; transition: background 0.15s; margin-bottom: 3px; border: 1px solid transparent; position: relative; }
-.client-item:hover { background: #1e1e1e; }
-.client-item.active { background: #1e1e1e; border-color: var(--border); }
-.client-item.active::before { content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 2px; height: 60%; background: var(--accent); border-radius: 0 2px 2px 0; }
-.ci-name { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 3px; }
-.ci-meta { font-size: 10px; color: var(--muted2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.ci-progress { margin-top: 6px; height: 2px; background: var(--border); border-radius: 1px; overflow: hidden; }
-.ci-progress-fill { height: 100%; background: var(--accent); border-radius: 1px; transition: width 0.3s; }
-.ci-progress-fill.full { background: var(--green); }
-.sb-delete { position: absolute; right: 8px; top: 8px; background: transparent; border: none; color: var(--muted); cursor: pointer; font-size: 13px; opacity: 0; transition: opacity 0.15s; padding: 2px 4px; }
-.client-item:hover .sb-delete { opacity: 1; }
-.sb-delete:hover { color: var(--red); }
-.sb-empty { padding: 20px 16px; font-size: 11px; color: var(--muted); line-height: 1.7; text-align: center; }
+        body {
+            background: #f0f2f5;
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, sans-serif;
+            padding: 2rem 1.5rem;
+            color: #1e293b;
+        }
 
-#main { flex: 1; overflow-y: auto; height: 100vh; display: flex; flex-direction: column; }
-#main::-webkit-scrollbar { width: 4px; }
-#main::-webkit-scrollbar-thumb { background: var(--border); }
+        /* modern container */
+        .app-wrapper {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
 
-.main-header { padding: 20px 32px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; background: var(--bg); z-index: 50; gap: 12px; }
-.mh-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 19px; letter-spacing: -0.5px; }
-.mh-title small { display: block; font-size: 10px; color: var(--muted2); font-family: 'DM Mono', monospace; font-weight: 300; margin-top: 1px; }
-.mh-actions { display: flex; gap: 8px; }
-.btn { font-family: 'DM Mono', monospace; font-size: 11px; padding: 7px 14px; border-radius: 7px; border: 1px solid var(--border); cursor: pointer; transition: all 0.15s; }
-.btn-accent { background: var(--accent); color: #000; border-color: var(--accent); font-weight: 500; }
-.btn-accent:hover { background: #d4eb30; }
-.btn-ghost { background: transparent; color: var(--muted2); }
-.btn-ghost:hover { color: var(--text); border-color: #444; }
+        /* header */
+        .brand-header {
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        .brand-header h1 {
+            font-size: 1.9rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            letter-spacing: -0.3px;
+        }
+        .brand-header p {
+            color: #475569;
+            margin-top: 0.4rem;
+            font-weight: 500;
+        }
 
-.client-info-bar { padding: 14px 32px; background: var(--surface); border-bottom: 1px solid var(--border); display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
-.cib-field { display: flex; flex-direction: column; gap: 4px; }
-.cib-label { font-size: 9px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); }
-.cib-field input { background: var(--card); border: 1px solid var(--border); color: var(--text); font-family: 'DM Mono', monospace; font-size: 12px; padding: 8px 10px; border-radius: 7px; transition: border-color 0.2s; width: 100%; }
-.cib-field input:focus { outline: none; border-color: var(--accent); }
-.cib-field input::placeholder { color: #333; }
+        /* 2-column layout */
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 1.05fr;
+            gap: 1.8rem;
+        }
 
-.progress-wrap { padding: 12px 32px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 14px; }
-.progress-label { font-size: 10px; color: var(--muted2); white-space: nowrap; }
-.progress-label b { color: var(--accent); }
-.progress-track { flex: 1; height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; }
-.progress-fill { height: 100%; background: var(--accent); border-radius: 2px; transition: width 0.4s; }
-.progress-fill.full { background: var(--green); }
-.progress-pct { font-size: 10px; color: var(--muted2); white-space: nowrap; }
+        /* card style */
+        .card {
+            background: white;
+            border-radius: 28px;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.05), 0 4px 8px rgba(0, 0, 0, 0.02);
+            overflow: hidden;
+            transition: all 0.2s ease;
+            border: 1px solid #e9eef3;
+        }
 
-.docs-grid { padding: 20px 32px 32px; display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 14px; flex: 1; }
-.doc-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; transition: border-color 0.2s, transform 0.15s; }
-.doc-card:hover { border-color: #333; transform: translateY(-1px); }
-.doc-card.complete { border-color: #253525; }
-.doc-card.complete .card-hd { background: #172017; }
-.doc-card.skipped { border-color: #252540; opacity: 0.65; }
+        .card-header {
+            background: #fafcff;
+            padding: 1.2rem 1.8rem;
+            border-bottom: 1px solid #eef2f8;
+        }
+        .card-header h2 {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #0f172a;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .card-header h2 i {
+            font-weight: 400;
+            font-size: 1.3rem;
+        }
 
-.card-hd { padding: 13px 15px 11px; background: #181818; display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
-.card-hd-left { display: flex; flex-direction: column; gap: 3px; flex: 1; min-width: 0; }
-.card-hd-right { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex-shrink: 0; }
-.card-num { font-size: 9px; color: var(--muted); font-family: 'Syne', sans-serif; }
-.card-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 13px; letter-spacing: -0.2px; line-height: 1.25; }
-.card-badge { font-size: 9px; padding: 2px 7px; border-radius: 20px; white-space: nowrap; }
-.bp { background: #2a2000; color: #fbbf24; border: 1px solid #5a4000; }
-.bd { background: #0d2a0d; color: var(--green); border: 1px solid #1a5a1a; }
-.bs { background: #1a1a2a; color: var(--purple); border: 1px solid #2a2a5a; }
+        .form-grid {
+            padding: 1.6rem 1.8rem 1.8rem;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.2rem 1.5rem;
+        }
 
-/* prefill tag */
-.prefill-tag { font-size: 8px; padding: 2px 6px; border-radius: 10px; background: #1a1a00; color: #e8ff47aa; border: 1px solid #3a3a00; white-space: nowrap; cursor: pointer; transition: all 0.15s; }
-.prefill-tag:hover { background: #2a2a00; color: var(--accent); }
+        .field-full {
+            grid-column: span 2;
+        }
 
-.card-body { padding: 12px 15px 13px; }
-.card-desc { font-size: 10.5px; color: var(--muted2); line-height: 1.6; margin-bottom: 11px; }
-.field-group { display: flex; flex-direction: column; gap: 8px; }
-.field-row { display: flex; flex-direction: column; gap: 3px; }
-.field-label { font-size: 9px; text-transform: uppercase; letter-spacing: 0.8px; color: var(--muted); }
-.field-row input, .field-row textarea, .field-row select { background: var(--surface); border: 1px solid var(--border); color: var(--text); font-family: 'DM Mono', monospace; font-size: 11px; padding: 7px 10px; border-radius: 6px; width: 100%; transition: border-color 0.2s; resize: vertical; }
-.field-row input:focus, .field-row textarea:focus, .field-row select:focus { outline: none; border-color: var(--accent); }
-.field-row input::placeholder, .field-row textarea::placeholder { color: #333; }
-.field-row select option { background: var(--card); }
-.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+        .input-group label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #5b6e8c;
+        }
+        .input-group input, .input-group select {
+            background: #ffffff;
+            border: 1px solid #cfdfed;
+            border-radius: 14px;
+            padding: 0.7rem 1rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #0f172a;
+            transition: 0.2s;
+            outline: none;
+            font-family: inherit;
+        }
+        .input-group input:focus, .input-group select:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+        }
+        .input-group input[readonly] {
+            background: #f8fafc;
+            border-color: #e2e8f0;
+            color: #1e293b;
+            font-weight: 600;
+        }
+        .total-row {
+            background: #f8fafd;
+            border-radius: 20px;
+            padding: 0.8rem 1.2rem;
+            margin-top: 0.6rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            border: 1px solid #e2edf7;
+        }
+        .total-row span:first-child {
+            font-weight: 600;
+            color: #2c3e66;
+        }
+        .total-row .total-amount {
+            font-size: 1.7rem;
+            font-weight: 800;
+            color: #0f3b5c;
+        }
+        .generate-btn {
+            margin-top: 1.2rem;
+            width: 100%;
+            background: #1f4a8c;
+            border: none;
+            padding: 0.9rem;
+            border-radius: 40px;
+            font-weight: 700;
+            font-size: 1rem;
+            color: white;
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+            font-family: inherit;
+        }
+        .generate-btn:hover {
+            background: #0f3b6f;
+            transform: scale(0.98);
+            box-shadow: 0 6px 14px rgba(31,74,140,0.25);
+        }
 
-.card-ft { padding: 9px 15px; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 6px; flex-wrap: wrap; }
-.ft-status { display: flex; align-items: center; gap: 6px; }
-.status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--muted); flex-shrink: 0; }
-.status-dot.done { background: var(--green); box-shadow: 0 0 5px var(--green); }
-.status-dot.skip { background: var(--purple); }
-.ft-status span { font-size: 10px; color: var(--muted2); }
-.ft-btns { display: flex; gap: 5px; align-items: center; }
-.btn-skip { background: transparent; color: var(--purple); border: 1px solid #2a2a5a; font-size: 10px; padding: 5px 9px; border-radius: 5px; cursor: pointer; font-family: 'DM Mono',monospace; transition: all 0.15s; }
-.btn-skip:hover { background: #1a1a3a; }
-.btn-save { background: var(--accent); color: #000; border: none; font-size: 10px; padding: 5px 11px; border-radius: 5px; cursor: pointer; font-family: 'DM Mono',monospace; font-weight: 500; transition: all 0.15s; }
-.btn-save:hover { background: #d4eb30; }
-.btn-dl { background: #1a1a1a; color: var(--muted2); border: 1px solid var(--border); font-size: 10px; padding: 5px 9px; border-radius: 5px; cursor: pointer; font-family: 'DM Mono',monospace; transition: all 0.15s; }
-.btn-dl:hover { color: var(--text); border-color: #444; }
-.btn-undo { background: transparent; color: var(--muted2); border: 1px solid var(--border); font-size: 10px; padding: 5px 11px; border-radius: 5px; cursor: pointer; font-family: 'DM Mono',monospace; transition: all 0.15s; }
-.btn-undo:hover { color: var(--red); border-color: var(--red); }
+        /* preview panel */
+        .preview-content {
+            padding: 1.6rem 1.8rem 1.8rem;
+            background: white;
+        }
+        .invoice-preview-card {
+            background: #ffffff;
+            border-radius: 24px;
+            border: 1px solid #eef3fc;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+        }
+        .invoice-header {
+            background: #fefefe;
+            padding: 1.2rem 1.5rem;
+            border-bottom: 2px solid #eef2ff;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+        .invoice-title h3 {
+            font-weight: 800;
+            font-size: 1.5rem;
+            color: #1e3c72;
+        }
+        .invoice-id {
+            text-align: right;
+            font-size: 0.8rem;
+            color: #4b6b9f;
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.8rem 1.2rem;
+            padding: 1.2rem 1.5rem;
+            background: #fbfdff;
+            border-bottom: 1px solid #ecf3fa;
+        }
+        .info-item {
+            font-size: 0.85rem;
+        }
+        .info-item strong {
+            font-weight: 700;
+            color: #1f3a64;
+            display: block;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            margin-bottom: 0.2rem;
+        }
+        .info-item span {
+            font-weight: 500;
+            color: #1e293b;
+        }
+        .line-items {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #ecf3fa;
+        }
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+        .items-table th {
+            text-align: left;
+            padding: 0.6rem 0.2rem;
+            border-bottom: 1px solid #e2edf2;
+            color: #52677a;
+            font-weight: 600;
+        }
+        .items-table td {
+            padding: 0.6rem 0.2rem;
+            border-bottom: 1px solid #f0f4f9;
+            color: #1f2e4a;
+        }
+        .total-amount-preview {
+            padding: 1rem 1.5rem;
+            text-align: right;
+            background: #ffffff;
+            border-top: 2px solid #eef2ff;
+            display: flex;
+            justify-content: flex-end;
+            gap: 1.5rem;
+            font-weight: 700;
+        }
+        .total-amount-preview span:first-child {
+            font-size: 1rem;
+            color: #334155;
+        }
+        .total-amount-preview .grand-total {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: #1f4a8c;
+        }
+        .footer-attribution {
+            margin-top: 1.2rem;
+            text-align: center;
+            font-size: 0.7rem;
+            color: #7e8aa2;
+            border-top: 1px dashed #e9edf2;
+            padding-top: 1rem;
+        }
+        .badge-status {
+            display: inline-block;
+            background: #eef2ff;
+            padding: 0.2rem 0.6rem;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
 
-.empty-state { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 60px 40px; text-align: center; }
-.empty-state h2 { font-family: 'Syne', sans-serif; font-size: 26px; font-weight: 800; letter-spacing: -1px; }
-.empty-state h2 em { color: var(--accent); font-style: normal; }
-.empty-state p { font-size: 12px; color: var(--muted2); line-height: 1.7; max-width: 280px; }
-.empty-cta { margin-top: 6px; background: var(--accent); color: #000; font-family: 'Syne', sans-serif; font-weight: 800; font-size: 13px; padding: 11px 22px; border-radius: 8px; border: none; cursor: pointer; transition: all 0.2s; }
-.empty-cta:hover { background: #d4eb30; transform: scale(1.03); }
-
-.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 200; display: none; align-items: center; justify-content: center; }
-.modal-overlay.open { display: flex; }
-.modal { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 26px 26px 22px; width: 360px; max-width: 90vw; }
-.modal h3 { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 17px; margin-bottom: 18px; letter-spacing: -0.5px; }
-.modal-fields { display: flex; flex-direction: column; gap: 11px; }
-.modal-field { display: flex; flex-direction: column; gap: 4px; }
-.modal-field label { font-size: 9px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); }
-.modal-field input { background: var(--surface); border: 1px solid var(--border); color: var(--text); font-family: 'DM Mono', monospace; font-size: 13px; padding: 10px 12px; border-radius: 7px; transition: border-color 0.2s; }
-.modal-field input:focus { outline: none; border-color: var(--accent); }
-.modal-field input::placeholder { color: #444; }
-.modal-actions { display: flex; gap: 8px; margin-top: 18px; justify-content: flex-end; }
-
-.toast { position: fixed; bottom: 22px; right: 22px; background: var(--accent); color: #000; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 12px; padding: 9px 16px; border-radius: 8px; opacity: 0; transform: translateY(8px); transition: all 0.25s; pointer-events: none; z-index: 999; }
-.toast.show { opacity: 1; transform: translateY(0); }
-
-@media (max-width: 680px) {
-  #sidebar { display: none; }
-  .client-info-bar { grid-template-columns: 1fr 1fr; padding: 12px 16px; }
-  .docs-grid { padding: 16px; grid-template-columns: 1fr; }
-  .main-header, .progress-wrap { padding-left: 16px; padding-right: 16px; }
-}
-</style>
+        @media (max-width: 900px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+            body {
+                padding: 1rem;
+            }
+        }
+        button {
+            cursor: pointer;
+        }
+        .generate-btn:active {
+            transform: scale(0.97);
+        }
+    </style>
 </head>
 <body>
+<div class="app-wrapper">
+    <div class="brand-header">
+        <h1>⚡ Freelancer Invoice Generator</h1>
+        <p>Fill in client info, Days & rate → realtime preview + downloadable PDF invoice</p>
+    </div>
 
-<div id="sidebar">
-  <div class="sb-logo">Freelance<span>Docs</span><sub>Client Manager</sub></div>
-  <div class="sb-section-label">Clients <button class="sb-add-btn" onclick="openModal()">+</button></div>
-  <div class="clients-list" id="clientsList"></div>
+    <div class="dashboard">
+        <!-- LEFT FORM: New Invoice -->
+        <div class="card">
+            <div class="card-header">
+                <h2>📄 New Invoice</h2>
+            </div>
+            <div class="form-grid">
+                <div class="input-group">
+                    <label>Client Name</label>
+                    <input type="text" id="clientName" value="Acme Studio Inc." placeholder="Client name">
+                </div>
+                <div class="input-group">
+                    <label>Account Type</label>
+                    <select id="accountType">
+                        <option value="Business">Business</option>
+                        <option value="Individual">Individual</option>
+                        <option value="Freelancer">Freelancer</option>
+                        <option value="Agency">Agency</option>
+                    </select>
+                </div>
+                <div class="input-group field-full">
+                    <label>Project Title</label>
+                    <input type="text" id="projectTitle" value="Website Redesign & Development" placeholder="Project description">
+                </div>
+                <div class="input-group">
+                    <label>Invoice Date</label>
+                    <input type="date" id="invoiceDate">
+                </div>
+                <div class="input-group">
+                    <label>Due Date</label>
+                    <input type="date" id="dueDate">
+                </div>
+                <div class="input-group">
+                    <label>Invoice Number</label>
+                    <input type="text" id="invoiceNumber" value="INV-2403-01" placeholder="# INV-001">
+                </div>
+                <div class="input-group">
+                    <label>Days Worked</label>
+                    <input type="number" id="DaysWorked" value="50" step="0.5" min="0">
+                </div>
+                <div class="input-group">
+                    <label>Hourly Rate ($)</label>
+                    <input type="number" id="hourlyRate" value="50" step="1" min="0">
+                </div>
+                <div class="input-group">
+                    <label>Invoice Amount (auto)</label>
+                    <input type="text" id="invoiceAmount" readonly placeholder="$0.00">
+                </div>
+                <div class="input-group">
+                    <label>Payment Method</label>
+                    <select id="paymentMethod">
+                        <option value="Bank Transfer">Bank Transfer</option>
+                        <option value="PayPal">PayPal</option>
+                        <option value="Credit Card">Credit Card</option>
+                        <option value="Cryptocurrency">Cryptocurrency</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Invoice Status</label>
+                    <select id="invoiceStatus">
+                        <option value="Paid">Paid</option>
+                        <option value="Unpaid" selected>Unpaid</option>
+                        <option value="Pending">Pending</option>
+                        <option value="Overdue">Overdue</option>
+                    </select>
+                </div>
+                <div class="field-full">
+                    <div class="total-row">
+                        <span>💰 INVOICE TOTAL</span>
+                        <span class="total-amount" id="invoiceTotalDisplay">$0.00</span>
+                    </div>
+                    <button class="generate-btn" id="generateInvoiceBtn">📑 Generate Invoice & Download PDF</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT PREVIEW: dynamic invoice preview -->
+        <div class="card">
+            <div class="card-header">
+                <h2>🧾 Invoice Preview</h2>
+            </div>
+            <div class="preview-content" id="invoicePreviewContainer">
+                <!-- dynamic preview will be injected here via js -->
+                <div id="liveInvoicePreview" class="invoice-preview-card">
+                    <!-- filled with JS -->
+                    <div style="padding: 2rem; text-align:center; color:#6c86a3;">Loading preview...</div>
+                </div>
+                <div class="footer-attribution">
+                    @junaid_jamel · Junaid Jamel · Professional Freelance Invoice
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
-
-<div id="main">
-  <div class="empty-state" id="emptyState">
-    <h2>Zero clients,<br><em>zero excuses.</em></h2>
-    <p>Add a client from the sidebar. All data saves automatically — no downloads needed.</p>
-    <button class="empty-cta" onclick="openModal()">+ Add First Client</button>
-  </div>
-  <div id="workspace" style="display:none;flex-direction:column;flex:1;">
-    <div class="main-header">
-      <div class="mh-title"><span id="wsName">—</span><small id="wsProj">—</small></div>
-      <div class="mh-actions">
-        <button class="btn btn-ghost" onclick="exportAll()">⬇ Export All</button>
-        <button class="btn btn-accent" onclick="saveInfo()">Save Info</button>
-      </div>
-    </div>
-    <div class="client-info-bar">
-      <div class="cib-field"><span class="cib-label">Client Name</span><input type="text" id="fName" placeholder="Café Celebration" oninput="liveSync()"></div>
-      <div class="cib-field"><span class="cib-label">Email</span><input type="text" id="fEmail" placeholder="owner@email.com" oninput="saveInfo()"></div>
-      <div class="cib-field"><span class="cib-label">Project</span><input type="text" id="fProject" placeholder="Website Redesign" oninput="liveSync()"></div>
-      <div class="cib-field"><span class="cib-label">Date</span><input type="date" id="fDate" onchange="saveInfo()"></div>
-    </div>
-    <div class="progress-wrap">
-      <span class="progress-label"><b id="progDone">0</b>/5 docs done</span>
-      <div class="progress-track"><div class="progress-fill" id="pFill" style="width:0%"></div></div>
-      <span class="progress-pct" id="pPct">0%</span>
-    </div>
-    <div class="docs-grid" id="docsGrid"></div>
-  </div>
-</div>
-
-<div class="modal-overlay" id="modal">
-  <div class="modal">
-    <h3>New Client</h3>
-    <div class="modal-fields">
-      <div class="modal-field"><label>Client Name *</label><input type="text" id="mcName" placeholder="e.g. Café Celebration, Khandala"></div>
-      <div class="modal-field"><label>Project Name *</label><input type="text" id="mcProject" placeholder="e.g. Website Design"></div>
-      <div class="modal-field"><label>Email (optional)</label><input type="text" id="mcEmail" placeholder="owner@gmail.com"></div>
-    </div>
-    <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
-      <button class="btn btn-accent" onclick="createClient()">Create →</button>
-    </div>
-  </div>
-</div>
-
-<div class="toast" id="toast"></div>
 
 <script>
-// ─── DOC DEFINITIONS ────────────────────────────────────────────────
-const DOCS = [
-  {
-    id:'contract', num:'01', title:'Contract / Service Agreement',
-    desc:'Legally binds scope, deliverables, timeline, revision limits, and payment terms. No contract = no protection.',
-    fields:[
-      {t:'text',k:'scope',l:'Scope of Work',p:'e.g. Design 5-page website for café'},
-      {t:'text',k:'deliverables',l:'Deliverables',p:'e.g. Figma file + live website'},
-      {t:'text',k:'timeline',l:'Timeline',p:'e.g. 14 days from advance receipt'},
-      {t:'text',k:'revisions',l:'Revision Limit',p:'e.g. 2 rounds'},
-      {t:'two',fields:[{t:'text',k:'total',l:'Total (₹)',p:'15000'},{t:'text',k:'advpct',l:'Advance %',p:'50%'}]},
-      {t:'text',k:'latefee',l:'Late Payment Fee',p:'e.g. 2% per week after due date'},
-      {t:'ta',k:'cnotes',l:'Additional Terms',p:'Kill fee, cancellation policy…'},
-    ],
-    prefill: {
-      scope: 'Design and develop a complete website as per agreed scope of work.',
-      deliverables: 'Final design files (Figma/PSD) + live deployed website + source code handover.',
-      timeline: '14 days from the date advance payment is received.',
-      revisions: '2 rounds of revisions included. Additional revisions billed at ₹500/round.',
-      total: '',
-      advpct: '50%',
-      latefee: '2% per week on outstanding balance after due date.',
-      cnotes: 'Kill Fee: If client cancels after work has begun, 50% of total project value is non-refundable.\nWork starts only after advance payment is confirmed.\nFreelancer retains right to display work in portfolio unless client requests otherwise in writing.'
+    // DOM elements
+    const clientNameInput = document.getElementById('clientName');
+    const accountTypeSelect = document.getElementById('accountType');
+    const projectTitleInput = document.getElementById('projectTitle');
+    const invoiceDateInput = document.getElementById('invoiceDate');
+    const dueDateInput = document.getElementById('dueDate');
+    const invoiceNumberInput = document.getElementById('invoiceNumber');
+    const DaysInput = document.getElementById('DaysWorked');
+    const rateInput = document.getElementById('hourlyRate');
+    const invoiceAmountField = document.getElementById('invoiceAmount');
+    const paymentMethodSelect = document.getElementById('paymentMethod');
+    const statusSelect = document.getElementById('invoiceStatus');
+    const invoiceTotalSpan = document.getElementById('invoiceTotalDisplay');
+    const previewContainer = document.getElementById('liveInvoicePreview');
+
+    // Helper: format currency USD
+    function formatMoney(value) {
+        if (isNaN(value)) value = 0;
+        return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 }).format(value);
     }
-  },
-  {
-    id:'nda', num:'02', title:'NDA — Non-Disclosure Agreement',
-    desc:'Protects sensitive business info shared during the project. Both parties are bound.',
-    fields:[
-      {t:'sel',k:'ndaNeeded',l:'Is NDA Required?',opts:['Yes — Client shares sensitive info','No — Skip this doc']},
-      {t:'text',k:'confInfo',l:'What Is Confidential?',p:'Menu pricing, unreleased products, business strategy…'},
-      {t:'text',k:'ndaDur',l:'NDA Duration',p:'2 years from project completion'},
-      {t:'ta',k:'ndaClause',l:'Standard NDA Clause',p:''},
-      {t:'ta',k:'ndaNotes',l:'Exclusions / Notes',p:'Info already public, third-party disclosures…'},
-    ],
-    prefill: {
-      ndaNeeded: 'Yes — Client shares sensitive info',
-      confInfo: 'All business information, pricing, strategies, designs, content, and data shared by the client during the project.',
-      ndaDur: '2 years from the date of project completion.',
-      ndaClause: 'Both parties agree to keep all shared information strictly confidential.\nThe freelancer shall not disclose, share, or use any client information for purposes other than completing the agreed project.\nThis agreement does not apply to information that is already publicly available, independently developed, or legally required to be disclosed.\nBreach of this agreement entitles the affected party to seek legal remedies.',
-      ndaNotes: 'Freelancer retains the right to display non-confidential visual deliverables (e.g. website screenshots) in their portfolio unless the client explicitly requests otherwise in writing.'
+
+    // compute amount from Days * rate
+    function computeInvoiceAmount() {
+        let Days = parseFloat(DaysInput.value);
+        let rate = parseFloat(rateInput.value);
+        if (isNaN(Days)) Days = 0;
+        if (isNaN(rate)) rate = 0;
+        let total = Days * rate;
+        return total;
     }
-  },
-  {
-    id:'sow', num:'03', title:'Proposal / Statement of Work',
-    desc:'Detailed breakdown of exactly what you are delivering. Eliminates scope creep disputes.',
-    fields:[
-      {t:'ta',k:'sowDel',l:'Detailed Deliverables',p:'List every single thing you are delivering…'},
-      {t:'ta',k:'notIncl',l:'Explicitly NOT Included',p:'SEO, copywriting, photography, logo design…'},
-      {t:'text',k:'tools',l:'Tools / Stack',p:'Figma + HTML/CSS/JS + GitHub Pages'},
-      {t:'text',k:'miles',l:'Milestones',p:'Day 3: Wireframe. Day 7: Design. Day 14: Final.'},
-      {t:'ta',k:'sowNotes',l:'Other Specs / Notes',p:'Brand colors, fonts, reference sites…'},
-    ],
-    prefill: {
-      sowDel: '1. Discovery call + requirement gathering\n2. Wireframe / layout concept (1 round for approval)\n3. Full visual design in Figma\n4. Responsive website development (mobile + desktop)\n5. Basic on-page SEO tags (title, meta description)\n6. Contact form / WhatsApp chat integration\n7. Deployment on agreed hosting / GitHub Pages\n8. 7-day post-launch bug fix support',
-      notIncl: '- Logo design or brand identity work\n- Content writing / copywriting\n- Professional photography or video\n- Advanced SEO or Google Ads setup\n- Third-party integrations beyond what is agreed\n- Ongoing website maintenance after handover\n- Domain name or hosting purchase (client\'s responsibility)',
-      tools: 'Figma (design) + HTML / CSS / JavaScript + GitHub Pages / Netlify (deployment)',
-      miles: 'Day 1–2: Requirement sign-off + advance payment\nDay 3–4: Wireframe approval\nDay 5–10: Design + development\nDay 11–13: Client review + revisions\nDay 14: Final delivery + deployment',
-      sowNotes: 'Client must provide: logo files, brand colors, reference websites, all text content, and images before work begins.\nDelays in providing content will extend the timeline accordingly.\nAll approvals must be provided in writing (WhatsApp / email).'
+
+    // update invoice amount field and total display, return computed value
+    function updateInvoiceAmountFields() {
+        let total = computeInvoiceAmount();
+        invoiceAmountField.value = formatMoney(total);
+        invoiceTotalSpan.innerText = formatMoney(total);
+        return total;
     }
-  },
-  {
-    id:'invoice', num:'04', title:'Invoice #1 — Advance Payment',
-    desc:'Document the deposit before work starts. 30–50% minimum. No advance = work does not start.',
-    fields:[
-      {t:'text',k:'invNum',l:'Invoice Number',p:'INV-001'},
-      {t:'two',fields:[{t:'text',k:'invTotal',l:'Total Value (₹)',p:'15000'},{t:'text',k:'advAmt',l:'Advance Amount (₹)',p:'7500'}]},
-      {t:'two',fields:[{t:'date',k:'invDate',l:'Invoice Date'},{t:'date',k:'dueDate',l:'Payment Due Date'}]},
-      {t:'text',k:'payMethod',l:'Payment Method',p:'UPI / Bank Transfer'},
-      {t:'sel',k:'payStatus',l:'Payment Status',opts:['Pending','Received — Confirmed','Overdue']},
-      {t:'text',k:'txnId',l:'UPI Ref / TXN ID',p:'e.g. 417823944823'},
-      {t:'ta',k:'invNotes',l:'Invoice Terms',p:''},
-    ],
-    prefill: {
-      invNum: 'INV-001',
-      invTotal: '',
-      advAmt: '',
-      invDate: new Date().toISOString().split('T')[0],
-      dueDate: new Date(Date.now()+3*86400000).toISOString().split('T')[0],
-      payMethod: 'UPI (preferred) / Bank Transfer',
-      payStatus: 'Pending',
-      txnId: '',
-      invNotes: 'Work will commence only after advance payment is received and confirmed.\nRemaining balance is due on final delivery before files/access are handed over.\nLate payments attract 2% per week on the outstanding amount.\nThis invoice is valid for 7 days from the date of issue.'
+
+    // set default dates (today & due = today + 30 days)
+    function setDefaultDates() {
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const dd = String(today.getDate()).padStart(2, '0');
+        const todayStr = `${yyyy}-${mm}-${dd}`;
+        if (!invoiceDateInput.value) invoiceDateInput.value = todayStr;
+        
+        let due = new Date(today);
+        due.setDate(today.getDate() + 30);
+        const dueY = due.getFullYear();
+        const dueM = String(due.getMonth() + 1).padStart(2, '0');
+        const dueD = String(due.getDate()).padStart(2, '0');
+        const dueStr = `${dueY}-${dueM}-${dueD}`;
+        if (!dueDateInput.value) dueDateInput.value = dueStr;
     }
-  },
-  {
-    id:'ip', num:'05', title:'IP Assignment Clause',
-    desc:'You retain all IP rights until final payment is received. Client cannot legally use the work before paying.',
-    fields:[
-      {t:'ta',k:'ipWork',l:'Work Covered',p:'All design files, source code, graphics…'},
-      {t:'text',k:'ipDate',l:'IP Transfers On',p:'Upon receipt of final balance payment'},
-      {t:'sel',k:'licType',l:'License Type',opts:['Full Ownership Transfer to Client','Exclusive License to Client','Non-Exclusive License','Custom (see notes)']},
-      {t:'ta',k:'ipClause',l:'Standard IP Clause',p:''},
-      {t:'ta',k:'ipNotes',l:'Exceptions / Notes',p:'Portfolio rights, stock image licenses…'},
-    ],
-    prefill: {
-      ipWork: 'All original design files, source code, graphics, written content, and deliverables created specifically for this project.',
-      ipDate: 'Upon receipt of full and final payment as per the agreed invoice amount.',
-      licType: 'Full Ownership Transfer to Client',
-      ipClause: 'Until full payment is received, all intellectual property created under this agreement remains exclusively owned by the freelancer.\nThe client may not use, publish, distribute, or reproduce any deliverables until complete payment is confirmed.\nUpon receipt of final payment, all IP rights for original work created under this project transfer to the client.\nThe freelancer retains the right to display the completed work in their portfolio and case studies unless explicitly agreed otherwise in writing.\nThird-party assets (stock images, fonts, icons) are subject to their own respective licenses — the client is responsible for obtaining appropriate licenses for such assets.',
-      ipNotes: 'Freelancer retains portfolio and case study rights.\nAny stock assets used are under their respective third-party licenses.\nSource code is handed over only after full payment is cleared.'
+
+    // when invoice date changes -> auto update due date (30 days later)
+    function syncDueDateWithInvoiceDate() {
+        const invoiceDateVal = invoiceDateInput.value;
+        if (invoiceDateVal) {
+            const dateObj = new Date(invoiceDateVal);
+            if (!isNaN(dateObj.getTime())) {
+                const newDue = new Date(dateObj);
+                newDue.setDate(dateObj.getDate() + 30);
+                const yyyy = newDue.getFullYear();
+                const mm = String(newDue.getMonth() + 1).padStart(2, '0');
+                const dd = String(newDue.getDate()).padStart(2, '0');
+                dueDateInput.value = `${yyyy}-${mm}-${dd}`;
+            }
+        }
     }
-  }
-];
 
-// ─── STATE ──────────────────────────────────────────────────────────
-let DB = {};
-let active = null;
+    // refresh entire preview based on current form values
+    function refreshPreview() {
+        // get current computed amount
+        const totalAmount = computeInvoiceAmount();
+        updateInvoiceAmountFields();  // ensures fields & total display consistent
 
-function freshDocs() {
-  const d = {};
-  DOCS.forEach(doc => { d[doc.id] = { status:'pending', data:{} }; });
-  return d;
-}
-function load() { try { const r=localStorage.getItem('fldocs4'); if(r) DB=JSON.parse(r); } catch(e){DB={};} }
-function save() { try { localStorage.setItem('fldocs4', JSON.stringify(DB)); } catch(e){} }
+        // gather data
+        const clientName = clientNameInput.value.trim() || "Unnamed Client";
+        const accountType = accountTypeSelect.value;
+        const projectTitle = projectTitleInput.value.trim() || "Consulting Service";
+        const invoiceDateRaw = invoiceDateInput.value;
+        const invoiceDateFormatted = invoiceDateRaw ? new Date(invoiceDateRaw).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : '—';
+        const dueDateRaw = dueDateInput.value;
+        const dueDateFormatted = dueDateRaw ? new Date(dueDateRaw).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : '—';
+        const invoiceNumber = invoiceNumberInput.value.trim() || "INV-000";
+        const Days = parseFloat(DaysInput.value) || 0;
+        const rate = parseFloat(rateInput.value) || 0;
+        const paymentMethod = paymentMethodSelect.value;
+        const status = statusSelect.value;
+        const amountTotal = totalAmount;
 
-// ─── SIDEBAR ─────────────────────────────────────────────────────────
-function renderSidebar() {
-  const el = document.getElementById('clientsList');
-  const ids = Object.keys(DB);
-  if (!ids.length) { el.innerHTML='<div class="sb-empty">No clients yet.<br>Hit + to add your first one.</div>'; return; }
-  el.innerHTML = ids.map(id => {
-    const c = DB[id];
-    const done = DOCS.filter(d => c.docs[d.id]?.status !== 'pending').length;
-    const pct = Math.round(done/DOCS.length*100);
-    return `<div class="client-item ${id===active?'active':''}" onclick="selectClient('${id}')">
-      <button class="sb-delete" onclick="event.stopPropagation();del('${id}')">✕</button>
-      <div class="ci-name">${esc(c.info.name||'Unnamed')}</div>
-      <div class="ci-meta">${esc(c.info.project||'No project')} · ${done}/5</div>
-      <div class="ci-progress"><div class="ci-progress-fill ${pct===100?'full':''}" style="width:${pct}%"></div></div>
-    </div>`;
-  }).join('');
-}
+        // status badge style
+        let statusBadgeClass = "";
+        let statusText = status;
+        if (status === "Paid") statusBadgeClass = "background: #e0f2e9; color:#1e6f3f;";
+        else if (status === "Unpaid") statusBadgeClass = "background: #fff0e0; color:#b45309;";
+        else if (status === "Pending") statusBadgeClass = "background: #fff1cf; color:#b97c0e;";
+        else statusBadgeClass = "background: #ffe6e5; color:#b91c1c;";
 
-// ─── SELECT CLIENT ───────────────────────────────────────────────────
-function selectClient(id) {
-  active = id;
-  renderSidebar();
-  const c = DB[id];
-  document.getElementById('emptyState').style.display = 'none';
-  const ws = document.getElementById('workspace');
-  ws.style.display = 'flex';
-  document.getElementById('fName').value = c.info.name||'';
-  document.getElementById('fEmail').value = c.info.email||'';
-  document.getElementById('fProject').value = c.info.project||'';
-  document.getElementById('fDate').value = c.info.date||'';
-  document.getElementById('wsName').textContent = c.info.name||'Unnamed Client';
-  document.getElementById('wsProj').textContent = c.info.project||'No project set';
-  renderDocs();
-  updateProg();
-}
+        // Build line item HTML
+        const lineItemAmount = amountTotal;
+        const lineItemHtml = `
+            <table class="items-table">
+                <thead>
+                <tr><th>Description</th><th>Days</th><th>Rate</th><th>Amount</th></tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>${escapeHtml(projectTitle)}</strong><br><span style="font-size:0.7rem; color:#64748b;">Freelance service</span></td>
+                        <td>${Days.toFixed(2)} hrs</td>
+                        <td>${formatMoney(rate)}</td>
+                        <td>${formatMoney(lineItemAmount)}</td>
+                    </tr>
+                </tbody>
+            </table>
+        `;
 
-function liveSync() {
-  if (!active) return;
-  DB[active].info.name = document.getElementById('fName').value;
-  DB[active].info.project = document.getElementById('fProject').value;
-  document.getElementById('wsName').textContent = DB[active].info.name||'Unnamed Client';
-  document.getElementById('wsProj').textContent = DB[active].info.project||'No project set';
-  save(); renderSidebar();
-}
-
-function saveInfo() {
-  if (!active) return;
-  DB[active].info.name    = document.getElementById('fName').value;
-  DB[active].info.email   = document.getElementById('fEmail').value;
-  DB[active].info.project = document.getElementById('fProject').value;
-  DB[active].info.date    = document.getElementById('fDate').value;
-  save(); renderSidebar();
-}
-
-// ─── DOCS ────────────────────────────────────────────────────────────
-function renderDocs() {
-  const c = DB[active];
-  document.getElementById('docsGrid').innerHTML = DOCS.map(doc => {
-    const s = c.docs[doc.id];
-    const bcls = s.status==='done'?'bd':s.status==='skip'?'bs':'bp';
-    const btxt = s.status==='done'?'✓ Complete':s.status==='skip'?'— Skipped':'⏳ Pending';
-    const dcls = s.status==='done'?'complete':s.status==='skip'?'skipped':'';
-    const dotcls = s.status==='done'?'done':s.status==='skip'?'skip':'';
-    const stxt = s.status==='done'?'Saved':s.status==='skip'?'Skipped':'Unsaved';
-    return `<div class="doc-card ${dcls}">
-      <div class="card-hd">
-        <div class="card-hd-left">
-          <div class="card-num">DOC ${doc.num}</div>
-          <div class="card-title">${doc.title}</div>
-        </div>
-        <div class="card-hd-right">
-          <span class="card-badge ${bcls}">${btxt}</span>
-          <span class="prefill-tag" onclick="applyPrefill('${doc.id}')">⚡ Auto-fill</span>
-        </div>
-      </div>
-      <div class="card-body">
-        <div class="card-desc">${doc.desc}</div>
-        <div class="field-group">${doc.fields.map(f=>rf(doc.id,f,s.data)).join('')}</div>
-      </div>
-      <div class="card-ft">
-        <div class="ft-status"><div class="status-dot ${dotcls}"></div><span>${stxt}</span></div>
-        <div class="ft-btns">
-          <button class="btn-dl" onclick="downloadDoc('${doc.id}')" title="Download this doc">⬇</button>
-          ${s.status !== 'pending'
-            ? `<button class="btn-undo" onclick="undoDoc('${doc.id}')">↩ Undo</button>`
-            : `<button class="btn-skip" onclick="skipDoc('${doc.id}')">Skip</button>
-               <button class="btn-save" onclick="doneDoc('${doc.id}')">Mark Complete</button>`
-          }
-        </div>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-function rf(docId, f, data) {
-  if (f.t==='two') return `<div class="two-col">${f.fields.map(sf=>rf(docId,sf,data)).join('')}</div>`;
-  const v = esc(data[f.k]||'');
-  const oc = `onchange="uf('${docId}','${f.k}',this.value)"`;
-  if (f.t==='ta') return `<div class="field-row"><div class="field-label">${f.l}</div><textarea rows="3" placeholder="${f.p||''}" ${oc}>${v}</textarea></div>`;
-  if (f.t==='sel') {
-    const opts = f.opts.map(o=>`<option ${(data[f.k]||f.opts[0])===o?'selected':''}>${esc(o)}</option>`).join('');
-    return `<div class="field-row"><div class="field-label">${f.l}</div><select ${oc}>${opts}</select></div>`;
-  }
-  return `<div class="field-row"><div class="field-label">${f.l}</div><input type="${f.t}" placeholder="${f.p||''}" value="${v}" ${oc}></div>`;
-}
-
-function uf(docId, key, val) {
-  if (!active) return;
-  DB[active].docs[docId].data[key] = val;
-  save();
-}
-
-// ─── AUTO-FILL ───────────────────────────────────────────────────────
-function applyPrefill(docId) {
-  if (!active) return;
-  const doc = DOCS.find(d=>d.id===docId);
-  if (!doc || !doc.prefill) return;
-  const existing = DB[active].docs[docId].data;
-  // Merge: only fill empty fields, don't overwrite what user already typed
-  Object.entries(doc.prefill).forEach(([k,v]) => {
-    if (!existing[k] || existing[k].trim()==='') {
-      existing[k] = v;
+        // full preview structure
+        const previewHTML = `
+            <div class="invoice-preview-card" style="background:white;">
+                <div class="invoice-header">
+                    <div class="invoice-title">
+                        <h3>INVOICE</h3>
+                        <span style="font-size:0.75rem; color:#556b8d;">Freelancer document</span>
+                    </div>
+                    <div class="invoice-id">
+                        <div><strong>Invoice ID:</strong> ${escapeHtml(invoiceNumber)}</div>
+                        <div style="margin-top:4px;"><span class="badge-status" style="${statusBadgeClass} padding:2px 10px; border-radius:20px;">${statusText}</span></div>
+                    </div>
+                </div>
+                <div class="info-grid">
+                    <div class="info-item"><strong>Client Name</strong><span>${escapeHtml(clientName)}</span></div>
+                    <div class="info-item"><strong>Account Type</strong><span>${escapeHtml(accountType)}</span></div>
+                    <div class="info-item"><strong>Invoice Number</strong><span>${escapeHtml(invoiceNumber)}</span></div>
+                    <div class="info-item"><strong>Invoice Date</strong><span>${invoiceDateFormatted}</span></div>
+                    <div class="info-item"><strong>Due Date</strong><span>${dueDateFormatted}</span></div>
+                    <div class="info-item"><strong>Payment Method</strong><span>${escapeHtml(paymentMethod)}</span></div>
+                </div>
+                <div class="line-items">
+                    <div style="margin-bottom:0.5rem; font-weight:600; font-size:0.8rem;">📋 PROJECT DETAILS</div>
+                    ${lineItemHtml}
+                </div>
+                <div class="total-amount-preview">
+                    <span>Total Amount (USD)</span>
+                    <span class="grand-total">${formatMoney(amountTotal)}</span>
+                </div>
+                <div style="padding:0.8rem 1.5rem 1rem; font-size:0.7rem; border-top:1px solid #f0f4fa; color:#557c9f; display:flex; justify-content:space-between;">
+                    <span>Payment terms: Net 30</span>
+                    <span>⚡ Thank you for your business</span>
+                </div>
+            </div>
+        `;
+        previewContainer.innerHTML = previewHTML;
     }
-  });
-  save();
-  renderDocs();
-  toast('⚡ Auto-filled with standard clauses');
-}
 
-function doneDoc(id) { DB[active].docs[id].status='done'; save(); renderDocs(); updateProg(); renderSidebar(); toast('Doc complete ✓'); }
-function skipDoc(id) { DB[active].docs[id].status='skip'; save(); renderDocs(); updateProg(); renderSidebar(); toast('Doc skipped'); }
-function undoDoc(id) { DB[active].docs[id].status='pending'; save(); renderDocs(); updateProg(); renderSidebar(); toast('↩ Reverted to pending'); }
-
-function updateProg() {
-  const c = DB[active];
-  const done = DOCS.filter(d=>c.docs[d.id]?.status!=='pending').length;
-  const pct = Math.round(done/DOCS.length*100);
-  document.getElementById('progDone').textContent=done;
-  const f=document.getElementById('pFill');
-  f.style.width=pct+'%'; f.className='progress-fill'+(pct===100?' full':'');
-  document.getElementById('pPct').textContent=pct+'%';
-}
-
-// ─── DOWNLOAD SINGLE DOC ─────────────────────────────────────────────
-function downloadDoc(docId) {
-  if (!active) return;
-  const c = DB[active];
-  const doc = DOCS.find(d=>d.id===docId);
-  const s = c.docs[docId];
-  const clientName = c.info.name||'Client';
-  const today = new Date().toLocaleDateString('en-IN');
-
-  let txt = `=====================================\n`;
-  txt += `FREELANCE DOCUMENT: ${doc.title.toUpperCase()}\n`;
-  txt += `=====================================\n\n`;
-  txt += `Date:          ${today}\n`;
-  txt += `Freelancer:    Prathamesh Thakur\n`;
-  txt += `Client:        ${c.info.name||'N/A'}\n`;
-  txt += `Client Email:  ${c.info.email||'N/A'}\n`;
-  txt += `Project:       ${c.info.project||'N/A'}\n`;
-  txt += `Status:        ${s.status.toUpperCase()}\n\n`;
-  txt += `-------------------------------------\n\n`;
-
-  // Flatten all field keys and labels for this doc
-  function flatFields(fields) {
-    fields.forEach(f => {
-      if (f.t==='two') { flatFields(f.fields); return; }
-      const val = s.data[f.k]||'';
-      if (val) txt += `${f.l.toUpperCase()}\n${val}\n\n`;
-    });
-  }
-  flatFields(doc.fields);
-
-  txt += `-------------------------------------\n`;
-  txt += `This document was generated by FreelanceDocs.\n`;
-  txt += `Both parties should sign/acknowledge this document before work begins.\n`;
-
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(new Blob([txt],{type:'text/plain'}));
-  a.download=`${doc.id}_${clientName.replace(/\s/g,'_')}_${Date.now()}.txt`;
-  a.click();
-  toast('⬇ Doc downloaded');
-}
-
-// ─── EXPORT ALL ───────────────────────────────────────────────────────
-function exportAll() {
-  if (!active) return;
-  const c=DB[active];
-  let t=`FREELANCE COMPLETE PROJECT DOSSIER\n=====================================\nGenerated: ${new Date().toLocaleString()}\n\nCLIENT:  ${c.info.name||'N/A'}\nEMAIL:   ${c.info.email||'N/A'}\nPROJECT: ${c.info.project||'N/A'}\nDATE:    ${c.info.date||'N/A'}\n\n`;
-  DOCS.forEach(doc=>{
-    const s=c.docs[doc.id];
-    t+=`=====================================\n[DOC ${doc.num}] ${doc.title.toUpperCase()}\nSTATUS: ${s.status.toUpperCase()}\n\n`;
-    function flatFields(fields) {
-      fields.forEach(f=>{
-        if(f.t==='two'){flatFields(f.fields);return;}
-        const val=s.data[f.k]||'';
-        if(val) t+=`${f.l.toUpperCase()}\n${val}\n\n`;
-      });
+    // simple escape to avoid XSS
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        }).replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, function(c) {
+            return c;
+        });
     }
-    flatFields(doc.fields);
-  });
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(new Blob([t],{type:'text/plain'}));
-  a.download=`FreelanceDocs_FULL_${(c.info.name||'Client').replace(/\s/g,'_')}_${Date.now()}.txt`;
-  a.click(); toast('⬇ All docs exported');
-}
 
-// ─── MODAL ───────────────────────────────────────────────────────────
-function openModal() { document.getElementById('modal').classList.add('open'); setTimeout(()=>document.getElementById('mcName').focus(),80); }
-function closeModal() { document.getElementById('modal').classList.remove('open'); ['mcName','mcProject','mcEmail'].forEach(id=>document.getElementById(id).value=''); }
-function createClient() {
-  const name=document.getElementById('mcName').value.trim();
-  const proj=document.getElementById('mcProject').value.trim();
-  const email=document.getElementById('mcEmail').value.trim();
-  if (!name) { document.getElementById('mcName').focus(); return; }
-  const id='c_'+Date.now();
-  DB[id]={info:{name,project:proj,email,date:''},docs:freshDocs()};
-  save(); closeModal(); renderSidebar(); selectClient(id); toast('Client added ✓');
-}
+    // attach event listeners to all inputs
+    function bindEvents() {
+        const inputs = [clientNameInput, accountTypeSelect, projectTitleInput, invoiceDateInput, dueDateInput, invoiceNumberInput, DaysInput, rateInput, paymentMethodSelect, statusSelect];
+        inputs.forEach(el => {
+            el.addEventListener('input', () => {
+                refreshPreview();
+            });
+            el.addEventListener('change', () => {
+                refreshPreview();
+            });
+        });
+        // Special: Days & rate recalc also triggers preview refresh + amount update
+        DaysInput.addEventListener('input', () => { refreshPreview(); });
+        rateInput.addEventListener('input', () => { refreshPreview(); });
+        // when invoice date changes, auto-update due date and refresh
+        invoiceDateInput.addEventListener('change', () => {
+            syncDueDateWithInvoiceDate();
+            refreshPreview();
+        });
+        // if due date manually changed, just refresh
+        dueDateInput.addEventListener('change', () => refreshPreview());
+    }
 
-function del(id) {
-  if (!confirm(`Delete "${DB[id]?.info?.name||'this client'}"?`)) return;
-  delete DB[id]; save();
-  if (active===id) { active=null; document.getElementById('workspace').style.display='none'; document.getElementById('emptyState').style.display=''; }
-  renderSidebar(); toast('Client deleted');
-}
+    // PDF Generation using html2canvas & jsPDF (capture the preview card exactly)
+    async function downloadInvoicePDF() {
+        const previewElement = document.getElementById('liveInvoicePreview');
+        if (!previewElement) return;
+        // Show a loading / tiny feedback
+        const btn = document.getElementById('generateInvoiceBtn');
+        const originalText = btn.innerText;
+        btn.innerText = '⏳ Generating PDF ...';
+        btn.disabled = true;
+        try {
+            // Wait a tiny moment for any style updates
+            await new Promise(r => setTimeout(r, 50));
+            // Use html2canvas on the preview container (high quality)
+            const canvas = await html2canvas(previewElement, {
+                scale: 2.5,
+                backgroundColor: '#ffffff',
+                logging: false,
+                useCORS: false,
+                windowWidth: previewElement.scrollWidth,
+            });
+            const imgData = canvas.toDataURL('image/png');
+            const { jsPDF } = window.jspdf;
+            // create PDF in landscape or portrait? invoice standard A4 portrait
+            const pdf = new jsPDF({
+                orientation: 'portrait',
+                unit: 'mm',
+                format: 'a4',
+            });
+            const imgWidth = 190; // mm (A4 width = 210, margins)
+            const pageHeight = 277;
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+            let position = 10;
+            pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+            // if content exceeds one page, add new page? usually it fits inside one A4 with typical preview size
+            if (imgHeight + position > pageHeight) {
+                // extremely rare but handle
+                let heightLeft = imgHeight - pageHeight + position;
+                let currentPosition = - (pageHeight - position);
+                while (heightLeft > 0) {
+                    pdf.addPage();
+                    pdf.addImage(imgData, 'PNG', 10, currentPosition, imgWidth, imgHeight);
+                    heightLeft -= pageHeight;
+                    currentPosition -= pageHeight;
+                }
+            }
+            // generate filename based on invoice number and client
+            const invoiceNum = invoiceNumberInput.value.trim() || "invoice";
+            const clientShort = clientNameInput.value.trim().slice(0, 12).replace(/\s/g, '');
+            pdf.save(`Invoice_${invoiceNum}_${clientShort}.pdf`);
+        } catch (error) {
+            console.error("PDF error:", error);
+            alert("Could not generate PDF. Please check console or try again.");
+        } finally {
+            btn.innerText = originalText;
+            btn.disabled = false;
+        }
+    }
 
-function toast(msg) { const el=document.getElementById('toast'); el.textContent=msg; el.classList.add('show'); setTimeout(()=>el.classList.remove('show'),2200); }
-function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+    // initialize app
+    function init() {
+        setDefaultDates();
+        syncDueDateWithInvoiceDate();   // ensure due date matches if invoice date preset
+        bindEvents();
+        refreshPreview();   // full initial render
+        // generate button triggers PDF download
+        const genBtn = document.getElementById('generateInvoiceBtn');
+        genBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            // before download, ensure latest preview is fully refreshed
+            refreshPreview();
+            // tiny delay to allow any DOM updates
+            setTimeout(() => {
+                downloadInvoicePDF();
+            }, 80);
+        });
+    }
 
-document.addEventListener('keydown',e=>{
-  if(e.key==='Enter'&&document.getElementById('modal').classList.contains('open')) createClient();
-  if(e.key==='Escape') closeModal();
-});
-
-load();
-renderSidebar();
-const ids=Object.keys(DB);
-if(ids.length) selectClient(ids[ids.length-1]);
+    init();
 </script>
 </body>
 </html>
